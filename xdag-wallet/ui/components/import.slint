@@ -1,0 +1,103 @@
+import { SText, SDivider } from "../modules/surrealism-ui/index.slint";
+import { XButton } from "../modules/surrealism-ui/x_index.slint";
+import { Button, HorizontalBox, TextEdit } from "std-widgets.slint";
+import {I18n} from "../i18n.slint";
+import {ROOT_GLOBAL, WalletAccounts, UiWallets} from "../global.slint";
+import { XtextEdit } from "xtext-edit.slint";
+
+export component ImportWallet inherits Rectangle {
+    in-out property <string> lang-name;
+    in property <string> placehold:i18n.mnemonic_hint_1;
+    in property <string> btn-text:i18n.continueText;
+    callback close();
+    callback action(string);
+    border-color: ROOT-GLOBAL.borderColor;
+    border-width: 1px;
+    border-radius: 10px;
+    background: ROOT-GLOBAL.bgColor;
+    i18n := I18n {
+        lang <=> lang-name;
+    }
+
+    SText {
+        x: 8px;
+        y: 10px;
+        font-size: 20px;
+        font-weight: 900;
+        width: parent.width * 50%;
+        text: i18n.importWallet;
+    }
+
+    top-bar := HorizontalBox {
+        y: 0;
+        width: 100%;
+        height: 40px;
+        alignment: end;
+        XButton {
+            font-size: 16px;
+            text: "";
+            height: parent.height * 70%;
+            width: parent.height * 70%;
+            icon: @image-url("../assets/close.svg");
+            show-icon: true;
+            round: true;
+            clicked => {
+                close();
+            }
+        }
+    }
+
+    SDivider {
+        y: 50px;
+        width: 100%;
+    }
+
+    VerticalLayout {
+        width: 90%;
+        alignment: center;
+        Rectangle {
+            height: 15%;
+        }
+
+        HorizontalBox {
+            width: 100%;
+            alignment: start;
+            SText {
+                font-size: 18px;
+                font-weight: 600;
+                width: parent.width * 50%;
+                text: i18n.mnemonic;
+            }
+        }
+
+        Rectangle {
+            height: 5%;
+        }
+
+        mnemonic := XtextEdit {
+            lang-name: lang-name;
+            font-size: 16px;
+            height: 140px;
+            wrap: word-wrap;
+            placeholder-text: placehold;
+        }
+
+        Rectangle {
+            height: 5%;
+        }
+
+        HorizontalBox {
+            alignment: end;
+            Button {
+                primary: true;
+                min-width: 100px;
+                text: i18n.continueText;
+                enabled: mnemonic.text != "";
+                clicked => {
+                    action(mnemonic.text);
+                    close();
+                }
+            }
+        }
+    }
+}
