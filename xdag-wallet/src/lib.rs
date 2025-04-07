@@ -40,12 +40,6 @@ pub enum NodeType {
 
 #[tokio::main]
 pub async fn main() -> Result<()> {
-    //set slint backend to winit for enable window.set_rendering_notifier()
-    if let Err(e) =
-        slint::platform::set_platform(Box::new(i_slint_backend_winit::Backend::new().unwrap()))
-    {
-        event!(Level::ERROR, "set_platform error: {:?}", e);
-    }
     // time format in logs
     let time_fmt = time::format_description::parse(
         "[year]-[month padding:zero]-[day padding:zero] [hour]:[minute]:[second]",
@@ -68,6 +62,13 @@ pub async fn main() -> Result<()> {
         .with_writer(non_blocking)
         .with_ansi(false) // without colors
         .init();
+
+    //set slint backend to winit for enable window.set_rendering_notifier()
+    if let Err(e) =
+        slint::platform::set_platform(Box::new(i_slint_backend_winit::Backend::new().unwrap()))
+    {
+        event!(Level::ERROR, "set_platform error: {:?}", e);
+    }
 
     let conf = config::get_config()?;
     let wallet_names = seek_wallet();

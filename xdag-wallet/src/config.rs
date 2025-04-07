@@ -32,7 +32,8 @@ pub fn get_config() -> Result<Config, XwError> {
     let proj_dir =
         ProjectDirs::from("com", "xdagger", "xdag plus").ok_or(XwError::ConfigLocationError)?;
     let path = proj_dir.config_dir().join(CONFIG_FILE_NAME);
-    if !path.exists() {
+    let prefix = path.parent().unwrap();
+    if !prefix.exists() {
         let default_config = Config {
             istest: false,
             language: DEFAULT_LANGUAGE.to_string(),
@@ -41,6 +42,7 @@ pub fn get_config() -> Result<Config, XwError> {
                 "Community Fund".to_string(),
             )],
         };
+        std::fs::create_dir_all(prefix)?;
         set_config(&default_config)?;
         return Ok(default_config);
     }
