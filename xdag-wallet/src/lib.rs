@@ -195,6 +195,29 @@ pub async fn main() -> Result<()> {
             });
     }
 
+    {
+        let wallet_weak = Rc::downgrade(&wallets_model);
+        ui.global::<WalletAccounts>()
+            .on_delete_wallet(move |index| {
+                if let Some(wallet_list) = wallet_weak.upgrade() {
+                    if wallet_list.row_count() > index as usize {
+                        let item = wallet_list.row_data(index as usize).unwrap();
+                        event!(Level::INFO, "Deleting wallet: {}", &item.name); // Log the name of the wallet being deleted
+                        let file_name = gen_file_path(&item.name); // Perform the deletion logic here, e.g., removing the wallet from the list
+                        let path = std::path::Path::new(&file_name);
+                        if path.exists() {
+                            let prefix = path.parent().unwrap();
+                            std::fs::remove_dir_all(prefix).unwrap();
+                        }
+                        wallet_list.remove(index as usize);
+                        if wallet_list.row_count() == 0 {
+                            std::process::exit(0)
+                        }
+                    }
+                }
+            });
+    }
+
     // {
     //     let ui_handle = ui.as_weak();
     //     ui.global::<WalletAccounts>()

@@ -1482,6 +1482,19 @@ export component AccountsView inherits Rectangle {
         close => {
             self.visible = false;
         }
+        action(index) => {
+            WalletAccounts.delete-wallet(index);
+            active-index = 0;
+            walletName.text = UiWallets.ui-wallets[active-index].name;
+            walletAddress.text = UiWallets.ui-wallets[active-index].address;
+            WalletAccounts.current-address = UiWallets.ui-wallets[active-index].address;
+            WalletAccounts.fetching = true;
+            WalletAccounts.is-tranx-empty = true;
+            WalletAccounts.fetch-history(WalletAccounts.is-test, UiWallets.ui-wallets[active-index].address);
+            self.visible = false;
+            root.show-select-wallet = false;
+            select-wallet.x = root.width;
+        }
     }
 
     err-win := ErrorWin {

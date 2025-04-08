@@ -10,7 +10,7 @@ export component DelWallet inherits Rectangle {
     in-out property <string> message;
     in-out property <int> wallet-index;
     callback close();
-    callback action();
+    callback action(int);
     i18n := I18n {
         lang <=> lang-name;
     }
@@ -106,8 +106,9 @@ export component DelWallet inherits Rectangle {
                     primary: true;
                     text: i18n.continueText;
                     clicked => {
-                        WalletAccounts.delete-wallet(wallet-index);
-                        root.visible = false;
+                        // WalletAccounts.delete-wallet(wallet-index,active-index);
+                        // root.visible = false;
+                        action(wallet-index)
                     }
                 }
             }
