@@ -64,13 +64,4 @@ open = "=5.3.2"
 
 [build-dependencies]
 slint-build = "1.10.0"
-
-
-[profile.dev]
-opt-level = 0
-
-[profile.release]
-opt-level = 3
-lto = "fat"           # Enable the most aggressive Link Time Optimization
-codegen-units = 1     # Reduce the number of code generation units, increasing optimization time but improving performance
-panic = "abort"       # Use 'abort' instead of 'unwind' for panic handling
+# Use 'abort' instead of 'unwind' for panic handling

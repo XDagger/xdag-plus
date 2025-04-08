@@ -167,7 +167,7 @@ fn get_timestamp() -> u64 {
     let sec = timestamp_nanos / (1e9 as u64);
     let usec = (timestamp_nanos - sec * (1e9 as u64)) / (1e3 as u64);
     let xmsec = (usec << 10) / (1e6 as u64);
-    sec << 10 | xmsec
+    (sec << 10) | xmsec
 }
 
 fn hex_encode(bytes: &[u8]) -> String {
