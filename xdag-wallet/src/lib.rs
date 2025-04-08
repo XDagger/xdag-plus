@@ -465,7 +465,11 @@ pub async fn main() -> Result<()> {
                                 .unwrap();
                         }
                         Err(e) => {
-                            error!("fetch transaction block failed, {}, {}", address.clone(), e);
+                            error!(
+                                "fetch transaction block failed, {}, {}",
+                                address.clone(),
+                                e.root_cause().to_string()
+                            );
                             ui_weak
                                 .upgrade_in_event_loop(move |handle| {
                                     // update fetching status in UI

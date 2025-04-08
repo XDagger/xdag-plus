@@ -6,7 +6,7 @@ This is a cross-platform XDAG GUI wallet, powered by `Rust` and `Slint UI`.
 
 ## bip32
 
-bip32 package is forked from bip32 crate and changed mnemonic words length.
+bip32 package forked from bip32 crate and changed mnemonic words length.
 
 It supports new 12 words generation and 12 ~ 24 words importation.
 

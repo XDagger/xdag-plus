@@ -3,7 +3,7 @@ import { XButton } from "../modules/surrealism-ui/x_index.slint";
 import { HorizontalBox, Button,LineEdit, TextEdit,VerticalBox,ScrollView } from "std-widgets.slint";
 import {I18n, Language} from "../i18n.slint";
 import {UiWallets,TranxItem,TranxDay,TranxType,FavoriteAddr,ROOT-GLOBAL, WalletAccounts} from "../global.slint";
-import {CreateWallet,ImportWallet, Contacts,Qrcode,MnemonicWin,Transaction, 
+import {CreateWallet,ImportWallet, Contacts,Qrcode,MnemonicWin,Transaction,
     XlineEdit,LanguageWin,NetworkWin,SendWin,DelContact,DelWallet,ErrorWin} from "../components/index.slint";
 import { PasswordView } from "./password.slint";
 
@@ -1438,7 +1438,7 @@ export component AccountsView inherits Rectangle {
             show-send-win = false;
         }
         check_password(ps) => {
-            if WalletAccounts.is-lock { 
+            if WalletAccounts.is-lock {
                 // lock screen
                 WalletAccounts.is-lock = ps != UiWallets.ui-wallets[0].password;
                 show-password-check = ps != UiWallets.ui-wallets[0].password;
@@ -1449,13 +1449,25 @@ export component AccountsView inherits Rectangle {
                 }
                 if ps == UiWallets.ui-wallets[0].password && show-send-win {
                     WalletAccounts.sending = true;
-                    WalletAccounts.send-xdag(WalletAccounts.is-test,UiWallets.ui-wallets[active-index].mnemonic,
-                    walletAddress.text,toAddress.text, Amount.text, Remark.text);
+                    WalletAccounts.sent = false;
+                    send-timer.running = true;
+                    // WalletAccounts.send-xdag(WalletAccounts.is-test,UiWallets.ui-wallets[active-index].mnemonic,
+                    // walletAddress.text,toAddress.text, Amount.text, Remark.text);
                 }
             }
             return ps == UiWallets.ui-wallets[0].password;
         }
     }
+    send-timer := Timer {
+        interval: 150ms;
+        running: false;
+        triggered => {
+            WalletAccounts.send-xdag(WalletAccounts.is-test,UiWallets.ui-wallets[active-index].mnemonic,
+                walletAddress.text,toAddress.text, Amount.text, Remark.text);
+            self.running = false;
+        }
+    }
+
     del-contact := DelContact {
         visible: false;
         lang-name: Language.name;

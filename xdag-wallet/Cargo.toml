@@ -48,11 +48,10 @@ anyhow = "1.0.95"
 thiserror = "2.0.9"
 
 byteorder = "1.5.0"
-# hex-literal = "0.4.1"
 hex = "0.4.3"
 
 reqwest = { version = "0.12.4", features = ["json"] }
-tokio = { version = "1.38.0", features = ["full"] }
+tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 jsonrpsee = { version = "0.24.0", features = ["http-client"] }
@@ -64,4 +63,3 @@ open = "=5.3.2"
 
 [build-dependencies]
 slint-build = "1.10.0"
-# Use 'abort' instead of 'unwind' for panic handling

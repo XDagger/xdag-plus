@@ -17,7 +17,7 @@ const DATA_FILE_NAME: &str = "xdagj_wallet.bin";
 
 #[derive(Clone, Debug)]
 pub struct XWallet {
-    pub lock: bool,
+    // pub lock: bool,
     pub password: String,
     pub private_key: [u8; 32],
     pub public_key: [u8; 33],
@@ -41,7 +41,7 @@ impl XWallet {
             public_key: [0_u8; 33],
             hash160: [0_u8; 20],
             aes_key: [0_u8; 24],
-            lock: true,
+            // lock: true,
         }
     }
     pub fn unlock(&mut self, password: &str, name: &str) -> Result<(), XwError> {
