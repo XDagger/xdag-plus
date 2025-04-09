@@ -218,6 +218,24 @@ pub async fn main() -> Result<()> {
             });
     }
 
+    {
+        ui.global::<WalletAccounts>()
+            .on_rename_wallet(move |old, new| {
+                event!(Level::INFO, "Renaming wallet: {} to {}", old, new);
+                let file_old = gen_file_path(&old);
+                let path_old = std::path::Path::new(&file_old);
+                let file_new = gen_file_path(&new);
+                let path_new = std::path::Path::new(&file_new);
+                if path_old.exists() {
+                    let prefix_old = path_old.parent().unwrap();
+                    let prefix_new = path_new.parent().unwrap();
+                    if std::fs::rename(prefix_old, prefix_new).is_err() {
+                        error!("rename wallet failed");
+                    }
+                }
+            });
+    }
+
     // {
     //     let ui_handle = ui.as_weak();
     //     ui.global::<WalletAccounts>()

@@ -4,7 +4,7 @@ import { HorizontalBox, Button,LineEdit, TextEdit,VerticalBox,ScrollView } from 
 import {I18n, Language} from "../i18n.slint";
 import {UiWallets,TranxItem,TranxDay,TranxType,FavoriteAddr,ROOT-GLOBAL, WalletAccounts} from "../global.slint";
 import {CreateWallet,ImportWallet, Contacts,Qrcode,MnemonicWin,Transaction,
-    XlineEdit,LanguageWin,NetworkWin,SendWin,DelContact,DelWallet,ErrorWin} from "../components/index.slint";
+    XlineEdit,LanguageWin,NetworkWin,SendWin,DelContact,DelWallet,ErrorWin, RenameWallet} from "../components/index.slint";
 import { PasswordView } from "./password.slint";
 
 
@@ -24,6 +24,7 @@ export component AccountsView inherits Rectangle {
     property <bool> show-mnemonic-words:false;
     property <bool> show-send-win:false;
     property <bool> show-password-check:false;
+    property <bool> show-rename-wallet:false;
     property <string> mnemonic-words;
     property <string> edit-contact-name;
     property <string> edit-contact-address;
@@ -733,6 +734,10 @@ export component AccountsView inherits Rectangle {
                                             colorized: darkorange;
                                             round: true;
                                             clicked => {
+                                                rename-win.old-name = wlt.name;
+                                                rename-win.new-name = wlt.name;
+                                                rename-win.index = idx;
+                                                rename-win.visible = true;
                                             }
                                         }
 
@@ -1503,6 +1508,18 @@ export component AccountsView inherits Rectangle {
         message: WalletAccounts.err-message;
         close => {
             self.visible = false;
+        }
+    }
+
+    rename-win := RenameWallet {
+        visible: false;
+        lang-name: Language.name;
+        close => {
+            self.visible = false;
+        }
+        action(index, name) => {
+            WalletAccounts.rename-wallet(self.old-name,name);
+            UiWallets.ui-wallets[index].name = name;
         }
     }
 

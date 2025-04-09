@@ -248,5 +248,6 @@ export global WalletAccounts {
     callback open-in-browser(is-test: bool, address: string);
     callback get-tranx-block(is-test: bool, address: string, direct: TranxType);
     callback open-link(url: string);
+    callback rename-wallet(old: string, new: string);
     callback check_wallet_pswd(string) -> bool;
 }
