@@ -259,7 +259,8 @@ export component EntryView inherits Rectangle {
         lang-name: Language.name;
         message: WalletAccounts.err-message;
         close => {
-            self.visible = false;
+            WalletAccounts.err-visible = false;
+            // self.visible = false;
         }
     }
 }
