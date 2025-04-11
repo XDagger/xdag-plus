@@ -253,16 +253,30 @@ export component SecurityWin inherits Rectangle {
                         }
                     }
                     key-released(event) => {
-                        if err.visible && event.text == Key.Backspace {
-                            self.text = "";
-                            err.visible = false;
-                            self.read-only = false;
-                        } else if event.text == Key.Backspace {
-                            err.visible = false;
-                            p5.text = "";
-                            p5.read-only = false;
-                            p5.focus();
-                            self.read-only = true;
+                        if win-title == i18n.desktop_change_password {
+                            if continue.enabled && event.text == Key.Backspace {
+                                self.text = "";
+                                err.visible = false;
+                                self.read-only = false;
+                            } else if event.text == Key.Backspace {
+                                err.visible = false;
+                                p5.text = "";
+                                p5.read-only = false;
+                                p5.focus();
+                                self.read-only = true;
+                            }
+                        } else {
+                            if err.visible && event.text == Key.Backspace {
+                                self.text = "";
+                                err.visible = false;
+                                self.read-only = false;
+                            } else if event.text == Key.Backspace {
+                                err.visible = false;
+                                p5.text = "";
+                                p5.read-only = false;
+                                p5.focus();
+                                self.read-only = true;
+                            }
                         }
                         return EventResult.accept;
                     }

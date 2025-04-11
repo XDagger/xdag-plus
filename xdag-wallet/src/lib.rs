@@ -222,14 +222,16 @@ pub async fn main() -> Result<()> {
         let ui_handle = ui.as_weak();
         ui.global::<WalletAccounts>()
             .on_change_password(move |old, new| {
+                let handle = ui_handle.upgrade().unwrap();
                 if let Err(e) = change_password(&old, &new) {
                     event!(Level::ERROR, "Failed to change password: {}", &e);
-                    let handle = ui_handle.upgrade().unwrap();
+
                     handle.global::<WalletAccounts>().set_err_visible(true);
                     handle
                         .global::<WalletAccounts>()
                         .set_err_message(e.root_cause().to_string().into());
                 } else {
+                    handle.global::<WalletAccounts>().set_current_password(new);
                     event!(Level::INFO, "Password changed successfully");
                 }
             });
@@ -896,7 +898,7 @@ mod test {
     #[test]
     fn test_change_pswd() {
         if let Err(e) = change_password("123456", "111111") {
-            println!("Error: {}", e.root_cause().to_string());
+            println!("Error: {:?}", e.root_cause().to_string());
         } else {
             println!("Password changed successfully");
         }

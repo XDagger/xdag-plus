@@ -37,6 +37,7 @@ export component AccountsView inherits Rectangle {
 
     init => {
         WalletAccounts.current-address = UiWallets.ui-wallets[0].address;
+        WalletAccounts.current-password = UiWallets.ui-wallets[0].password;
         WalletAccounts.current-balance = "0.00";
         WalletAccounts.fetch-history(WalletAccounts.is-test, UiWallets.ui-wallets[0].address);
     }
@@ -1334,7 +1335,7 @@ export component AccountsView inherits Rectangle {
                 mnemonic-words = "";
             }
             action(name, pswd) => {
-                WalletAccounts.create-wallet(name, pswd, mnemonic-words);
+                WalletAccounts.create-wallet(name, WalletAccounts.current-password, mnemonic-words);
             }
         }
 
@@ -1448,20 +1449,22 @@ export component AccountsView inherits Rectangle {
         check_password(ps) => {
             if WalletAccounts.is-lock {
                 // lock screen
-                WalletAccounts.is-lock = ps != UiWallets.ui-wallets[0].password;
-                show-password-check = ps != UiWallets.ui-wallets[0].password;
+                WalletAccounts.is-lock = ps != WalletAccounts.current-password;
+                show-password-check = ps != WalletAccounts.current-password;
             } else if WalletAccounts.is-change-pswd {
-                show-password-check = ps != UiWallets.ui-wallets[0].password;
-                security-win.win-title = i18n.desktop_change_password;
-                security-win.visible = true;
-                security-win.reinput();
-                security-win.show-btn();
+                show-password-check = ps != WalletAccounts.current-password;
+                if !show-password-check {
+                    security-win.win-title = i18n.desktop_change_password;
+                    security-win.visible = true;
+                    security-win.reinput();
+                    security-win.show-btn();
+                }
             } else {
-                show-password-check = ps != UiWallets.ui-wallets[0].password;
-                if ps == UiWallets.ui-wallets[0].password && !show-send-win {
+                show-password-check = ps != WalletAccounts.current-password;
+                if ps == WalletAccounts.current-password && !show-send-win {
                     show-mnemonic-words = true;
                 }
-                if ps == UiWallets.ui-wallets[0].password && show-send-win {
+                if ps == WalletAccounts.current-password && show-send-win {
                     WalletAccounts.sending = true;
                     WalletAccounts.sent = false;
                     send-timer.running = true;
@@ -1469,7 +1472,7 @@ export component AccountsView inherits Rectangle {
                     // walletAddress.text,toAddress.text, Amount.text, Remark.text);
                 }
             }
-            return ps == UiWallets.ui-wallets[0].password;
+            return ps == WalletAccounts.current-password;
         }
     }
     send-timer := Timer {
@@ -1541,7 +1544,7 @@ export component AccountsView inherits Rectangle {
         check_password(pswd) => {
             self.visible = false;
             WalletAccounts.is-change-pswd = false;
-            WalletAccounts.change-password(UiWallets.ui-wallets[0].password,pswd);
+            WalletAccounts.change-password(WalletAccounts.current-password,pswd);
         }
     }
 
