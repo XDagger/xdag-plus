@@ -3,7 +3,7 @@ import { XButton } from "../modules/surrealism-ui/x_index.slint";
 import { HorizontalBox, Button,LineEdit, TextEdit,VerticalBox,ScrollView } from "std-widgets.slint";
 import {I18n, Language} from "../i18n.slint";
 import {UiWallets,TranxItem,TranxDay,TranxType,FavoriteAddr,ROOT-GLOBAL, WalletAccounts} from "../global.slint";
-import {CreateWallet,ImportWallet, Contacts,Qrcode,MnemonicWin,Transaction, SecurityWin,
+import {CreateWallet,ImportWallet, Contacts,Qrcode,MnemonicWin,Transaction, SecurityWin,About,
     XlineEdit,LanguageWin,NetworkWin,SendWin,DelContact,DelWallet,ErrorWin, RenameWallet} from "../components/index.slint";
 import { PasswordView } from "./password.slint";
 
@@ -1166,7 +1166,7 @@ export component AccountsView inherits Rectangle {
                             }
 
                             Image {
-                                source: @image-url("../assets/legal_file.svg");
+                                source: @image-url("../assets/slint.svg");
                                 colorize: ROOT_GLOBAL.textColorGray;
                             }
 
@@ -1176,7 +1176,7 @@ export component AccountsView inherits Rectangle {
 
                             SText {
                                 min-width: 100px;
-                                text: "Legal";
+                                text: "Slint";
                                 font-size: 18px;
                                 horizontal-alignment: center;
                             }
@@ -1189,6 +1189,7 @@ export component AccountsView inherits Rectangle {
                         t4 := TouchArea {
                             mouse-cursor: pointer;
                             clicked => {
+                                about-slint.visible = true;
                             }
                         }
                     }
@@ -1546,6 +1547,10 @@ export component AccountsView inherits Rectangle {
             WalletAccounts.is-change-pswd = false;
             WalletAccounts.change-password(WalletAccounts.current-password,pswd);
         }
+    }
+
+    about-slint := About {
+        visible: false;
     }
 
     clipboard := LineEdit {
