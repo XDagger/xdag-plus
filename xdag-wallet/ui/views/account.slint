@@ -36,170 +36,11 @@ export component AccountsView inherits Rectangle {
     }
 
     init => {
-        toAddress.focus_me();
         WalletAccounts.current-address = UiWallets.ui-wallets[0].address;
         WalletAccounts.current-password = UiWallets.ui-wallets[0].password;
         WalletAccounts.current-balance = "0.00";
         WalletAccounts.fetch-history(WalletAccounts.is-test, UiWallets.ui-wallets[0].address);
     }
-    HorizontalLayout {
-        width: 100%;
-        height: ROOT-GLOBAL.window-height;
-        VerticalLayout {
-            width: 18%;
-            height: 100%;
-            padding-top: 40px;
-            padding-bottom: 10px;
-            padding-left: 8px;
-            padding-right: 8px;
-            Rectangle {
-                Image {
-                    width: 40px;
-                    source: @image-url("../assets/logo.png");
-                }
-            }
-
-            Rectangle {
-                height: 2%;
-            }
-
-            SText {
-                font-weight: 800;
-                font-size: 15px;
-                horizontal-alignment: center;
-                text: @tr("XDAG Plus");
-            }
-
-            Rectangle { }
-
-            walletBtn := Button {
-                primary: true;
-                colorize-icon: true;
-                icon: @image-url("../assets/account_balance_wallet.svg");
-                text: i18n.wallet;
-                clicked => {
-                    walletBtn.primary = true;
-                    contactsBtn.primary = false;
-                    settingsBtn.primary = false;
-                    contacts-view.y = parent.height;
-                    settings-view.y = parent.height;
-                    account-view.y = header-bar.height;
-                }
-            }
-
-            Rectangle {
-                height: 2%;
-            }
-
-            contactsBtn := Button {
-                colorize-icon: true;
-                icon: @image-url("../assets/person.svg");
-                text: i18n.contacts;
-                clicked => {
-                    contactsBtn.primary = true;
-                    walletBtn.primary = false;
-                    settingsBtn.primary = false;
-                    contacts-view.y = 0;
-                    settings-view.y = parent.height;
-                    account-view.y = -1 * parent.height;
-                }
-            }
-
-            Rectangle {
-                height: 2%;
-            }
-
-            settingsBtn := Button {
-                colorize-icon: true;
-                icon: @image-url("../assets/settings_applications.svg");
-                text: i18n.setting;
-                clicked => {
-                    settingsBtn.primary = true;
-                    walletBtn.primary = false;
-                    contactsBtn.primary = false;
-                    contacts-view.y = -1 * parent.height;
-                    settings-view.y = 0;
-                    account-view.y = -1 * parent.height;
-                }
-            }
-
-            Rectangle { }
-
-            SText {
-                color: ROOT-GLOBAL.versionColor;
-                font-size: 14px;
-                horizontal-alignment: center;
-                text: ROOT-GLOBAL.version;
-            }
-        }
-
-        // VerticalLayout {
-        //     // height: 100%;
-        //     width: parent.width * 85%;
-            header-bar := HorizontalLayout {
-            width: parent.width * 82%;
-            padding-top: 3px;
-            padding-right: 10px;
-            height: 32px;
-            alignment: end;
-            spacing: 8px;
-            Rectangle {
-                height: 24px;
-                width: 65px;
-                netType := SText {
-                    color: WalletAccounts.is-test ? ROOT_GLOBAL.redColor : ROOT_GLOBAL.greenColor;
-                    vertical-alignment: bottom;
-                    font-size: 14px;
-                    font-weight: 800;
-                    text: WalletAccounts.is-test ? @tr("TestNet") : @tr("MainNet");
-                }
-
-                TouchArea {
-                    mouse-cursor: pointer;
-                    clicked => {
-                        show-network = true;
-                    }
-                }
-            }
-
-            XButton {
-                font-size: 20px;
-                text: "";
-                height: parent.height * 95%;
-                width: parent.height * 95%;
-                icon: @image-url("../assets/lock.svg");
-                show-icon: true;
-                round: true;
-                clicked => {
-                    WalletAccounts.is-lock = true;
-                    show-password-check = true;
-                }
-            }
-
-            XButton {
-                font-size: 20px;
-                text: "";
-                height: parent.height * 95%;
-                width: parent.height * 95%;
-                icon: @image-url("../assets/refresh.svg");
-                show-icon: true;
-                round: true;
-                clicked => {
-                    WalletAccounts.fetching = true;
-                    WalletAccounts.is-tranx-empty = true;
-                    WalletAccounts.fetch-history(WalletAccounts.is-test, UiWallets.ui-wallets[active-index].address);
-                }
-            }
-        }
-        // }
-
-        Rectangle {
-            width: 100%;
-            height: ROOT-GLOBAL.window-height;
-            background: ROOT-GLOBAL.bgColorMask2;
-        }
-    }
-
     account-view := Rectangle {
         y: header-bar.height;
         x: parent.width * 18%;
@@ -597,6 +438,166 @@ export component AccountsView inherits Rectangle {
         animate y {
             duration: 450ms;
             easing: ease;
+        }
+    }
+
+    HorizontalLayout {
+        x: 0;
+        y: 0;
+        width: 100%;
+        height: ROOT-GLOBAL.window-height;
+        VerticalLayout {
+            width: 18%;
+            height: 100%;
+            padding-top: 40px;
+            padding-bottom: 10px;
+            padding-left: 8px;
+            padding-right: 8px;
+            Rectangle {
+                Image {
+                    width: 40px;
+                    source: @image-url("../assets/logo.png");
+                }
+            }
+
+            Rectangle {
+                height: 2%;
+            }
+
+            SText {
+                font-weight: 800;
+                font-size: 15px;
+                horizontal-alignment: center;
+                text: @tr("XDAG Plus");
+            }
+
+            Rectangle { }
+
+            walletBtn := Button {
+                primary: true;
+                colorize-icon: true;
+                icon: @image-url("../assets/account_balance_wallet.svg");
+                text: i18n.wallet;
+                clicked => {
+                    walletBtn.primary = true;
+                    contactsBtn.primary = false;
+                    settingsBtn.primary = false;
+                    contacts-view.y = parent.height;
+                    settings-view.y = parent.height;
+                    account-view.y = header-bar.height;
+                }
+            }
+
+            Rectangle {
+                height: 2%;
+            }
+
+            contactsBtn := Button {
+                colorize-icon: true;
+                icon: @image-url("../assets/person.svg");
+                text: i18n.contacts;
+                clicked => {
+                    contactsBtn.primary = true;
+                    walletBtn.primary = false;
+                    settingsBtn.primary = false;
+                    contacts-view.y = 0;
+                    settings-view.y = parent.height;
+                    account-view.y = -1 * parent.height;
+                }
+            }
+
+            Rectangle {
+                height: 2%;
+            }
+
+            settingsBtn := Button {
+                colorize-icon: true;
+                icon: @image-url("../assets/settings_applications.svg");
+                text: i18n.setting;
+                clicked => {
+                    settingsBtn.primary = true;
+                    walletBtn.primary = false;
+                    contactsBtn.primary = false;
+                    contacts-view.y = -1 * parent.height;
+                    settings-view.y = 0;
+                    account-view.y = -1 * parent.height;
+                }
+            }
+
+            Rectangle { }
+
+            SText {
+                color: ROOT-GLOBAL.versionColor;
+                font-size: 14px;
+                horizontal-alignment: center;
+                text: ROOT-GLOBAL.version;
+            }
+        }
+
+        // VerticalLayout {
+        //     // height: 100%;
+        //     width: parent.width * 85%;
+            header-bar := HorizontalLayout {
+            width: parent.width * 82%;
+            padding-top: 3px;
+            padding-right: 10px;
+            height: 32px;
+            alignment: end;
+            spacing: 8px;
+            Rectangle {
+                height: 24px;
+                width: 65px;
+                netType := SText {
+                    color: WalletAccounts.is-test ? ROOT_GLOBAL.redColor : ROOT_GLOBAL.greenColor;
+                    vertical-alignment: bottom;
+                    font-size: 14px;
+                    font-weight: 800;
+                    text: WalletAccounts.is-test ? @tr("TestNet") : @tr("MainNet");
+                }
+
+                TouchArea {
+                    mouse-cursor: pointer;
+                    clicked => {
+                        show-network = true;
+                    }
+                }
+            }
+
+            XButton {
+                font-size: 20px;
+                text: "";
+                height: parent.height * 95%;
+                width: parent.height * 95%;
+                icon: @image-url("../assets/lock.svg");
+                show-icon: true;
+                round: true;
+                clicked => {
+                    WalletAccounts.is-lock = true;
+                    show-password-check = true;
+                }
+            }
+
+            XButton {
+                font-size: 20px;
+                text: "";
+                height: parent.height * 95%;
+                width: parent.height * 95%;
+                icon: @image-url("../assets/refresh.svg");
+                show-icon: true;
+                round: true;
+                clicked => {
+                    WalletAccounts.fetching = true;
+                    WalletAccounts.is-tranx-empty = true;
+                    WalletAccounts.fetch-history(WalletAccounts.is-test, UiWallets.ui-wallets[active-index].address);
+                }
+            }
+        }
+        // }
+
+        Rectangle {
+            width: 100%;
+            height: ROOT-GLOBAL.window-height;
+            background: ROOT-GLOBAL.bgColorMask2;
         }
     }
 
