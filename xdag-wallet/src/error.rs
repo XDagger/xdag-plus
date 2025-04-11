@@ -58,4 +58,6 @@ pub enum XwError {
     RpcError(String),
     #[error("Mnemonic is invalid")]
     MnemonicInvalidError,
+    #[error("Change wallet password failed")]
+    ChangePasswordFailedError,
 }

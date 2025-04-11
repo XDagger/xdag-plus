@@ -1,7 +1,7 @@
-// use anyhow::Result;
 use super::bip44::key_from_mnemonic;
 use crate::crypto::*;
 use crate::error::XwError;
+use anyhow::Result;
 use bcrypt::*;
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use directories::ProjectDirs;
@@ -44,17 +44,17 @@ impl XWallet {
             // lock: true,
         }
     }
-    pub fn unlock(&mut self, password: &str, name: &str) -> Result<(), XwError> {
+    pub fn unlock(&mut self, password: &str, name: &str) -> Result<()> {
         if password.is_empty() {
-            return Err(XwError::NoPassword);
+            return Err(XwError::NoPassword.into());
         }
         if name.is_empty() {
-            return Err(XwError::NoWalletName);
+            return Err(XwError::NoWalletName.into());
         }
         let file_name = gen_file_path(name);
         let file_path = std::path::Path::new(&file_name);
         if !file_path.exists() {
-            return Err(XwError::WalletNotFound(file_name));
+            return Err(XwError::WalletNotFound(file_name).into());
         }
         let mut file = File::open(file_path)?;
         let mut buffer = Vec::new();
@@ -63,7 +63,7 @@ impl XWallet {
 
         let version = reader.read_u32::<BigEndian>()?;
         if version != 4 {
-            return Err(XwError::VersionDataError);
+            return Err(XwError::VersionDataError.into());
         }
 
         let salt = read_bytes(&mut reader)?;
@@ -84,7 +84,7 @@ impl XWallet {
         let private_key: [u8; 32] = bip44_key.private_key().to_bytes().as_slice().try_into()?;
 
         if private_key != self.private_key {
-            return Err(XwError::ReadPrivKeyError);
+            return Err(XwError::ReadPrivKeyError.into());
         }
         let public_key = bip44_key.public_key().to_bytes();
         self.public_key = public_key;
@@ -117,7 +117,7 @@ impl XWallet {
         Ok(())
     }
 
-    pub fn flush(&mut self) -> Result<(), XwError> {
+    pub fn flush(&mut self) -> Result<()> {
         let buffer: Vec<u8> = Vec::new();
         let mut writer = Cursor::new(buffer);
         writer.write_u32::<BigEndian>(VERSION)?;
@@ -184,24 +184,24 @@ impl XWallet {
         Ok(())
     }
 
-    pub fn import_from_mnemonic(&mut self, mnemonic: &str) -> Result<(), XwError> {
+    pub fn import_from_mnemonic(&mut self, mnemonic: &str) -> Result<()> {
         if self.password.is_empty() {
-            return Err(XwError::NoPassword);
+            return Err(XwError::NoPassword.into());
         }
         if self.name.is_empty() {
-            return Err(XwError::NoWalletName);
+            return Err(XwError::NoWalletName.into());
         }
 
         let trimed = mnemonic.trim();
         let bip44_res = key_from_mnemonic(trimed);
         if bip44_res.is_err() {
-            return Err(XwError::MnemonicInvalidError);
+            return Err(XwError::MnemonicInvalidError.into());
         }
 
         let file_name = gen_file_path(&self.name);
         let file_path = std::path::Path::new(&file_name).parent().unwrap();
         if file_path.exists() {
-            return Err(XwError::WalletExist(self.name.clone()));
+            return Err(XwError::WalletExist(self.name.clone()).into());
         }
         std::fs::create_dir_all(file_path)?;
 
@@ -235,15 +235,15 @@ impl XWallet {
         Ok(())
     }
 
-    pub fn change_password(&mut self, old: &str, new: &str) -> Result<(), XwError> {
+    pub fn change_password(&mut self, old: &str, new: &str) -> Result<()> {
         if self.password != old {
-            return Err(XwError::InputPasswordError);
+            return Err(XwError::InputPasswordError.into());
         }
         if self.name.is_empty() {
-            return Err(XwError::NoWalletName);
+            return Err(XwError::NoWalletName.into());
         }
         if new.is_empty() {
-            return Err(XwError::NoPassword);
+            return Err(XwError::NoPassword.into());
         }
         self.password = new.to_string();
         self.flush()

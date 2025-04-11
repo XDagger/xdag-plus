@@ -57,7 +57,7 @@ export global UiWallets {
         // {
         //     name:"aaa",
         //     locked:false,
-        //     password:"",
+        //     password:"111111",
         //     mnemonic:"",
         //     address:"AvqFVndNNydEGzk2jue2FJHkkEaFvoRLC",
         //     balance:"0.0",
@@ -66,7 +66,7 @@ export global UiWallets {
         // {
         //     name:"bbb",
         //     locked:false,
-        //     password:"",
+        //     password:"111111",
         //     mnemonic:"",
         //     address:"BvqFVndNNydEGzk2jue2FJHkkEaFvoRLC",
         //     balance:"1.1",
@@ -146,6 +146,7 @@ export global WalletAccounts {
     in-out property <bool> sending: false;
     in-out property <bool> sent: false;
     in-out property <bool> is-lock: false;
+    in-out property <bool> is-change-pswd: false;
     in-out property <[FavoriteAddr]> favorite-model:[
         // { address:"4duPWMbYUgAifVYkKDCWxLvRRkSByf5gb", name:"Community Fund" },
         // { address:"4RfUFL7XwLi3gaprob6uPUQ41dHbnjcD6", name:"trade" },
@@ -249,5 +250,6 @@ export global WalletAccounts {
     callback get-tranx-block(is-test: bool, address: string, direct: TranxType);
     callback open-link(url: string);
     callback rename-wallet(old: string, new: string);
+    callback change-password(old: string, new: string);
     callback check_wallet_pswd(string) -> bool;
 }

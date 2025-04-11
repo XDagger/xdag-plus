@@ -219,6 +219,23 @@ pub async fn main() -> Result<()> {
     }
 
     {
+        let ui_handle = ui.as_weak();
+        ui.global::<WalletAccounts>()
+            .on_change_password(move |old, new| {
+                if let Err(e) = change_password(&old, &new) {
+                    event!(Level::ERROR, "Failed to change password: {}", &e);
+                    let handle = ui_handle.upgrade().unwrap();
+                    handle.global::<WalletAccounts>().set_err_visible(true);
+                    handle
+                        .global::<WalletAccounts>()
+                        .set_err_message(e.root_cause().to_string().into());
+                } else {
+                    event!(Level::INFO, "Password changed successfully");
+                }
+            });
+    }
+
+    {
         ui.global::<WalletAccounts>()
             .on_rename_wallet(move |old, new| {
                 event!(Level::INFO, "Renaming wallet: {} to {}", old, new);
@@ -381,7 +398,7 @@ pub async fn main() -> Result<()> {
                         }
                     }
                     Err(e) => {
-                        error!("unlock wallet failed...{}", e);
+                        error!("unlock wallet failed...{}", e.root_cause().to_string());
                         false
                     }
                 });
@@ -436,7 +453,11 @@ pub async fn main() -> Result<()> {
                                 .unwrap();
                         }
                         Err(e) => {
-                            error!("fetch wallet balance failed, {}, {}", address.clone(), e);
+                            error!(
+                                "fetch wallet balance failed, {}, {}",
+                                address.clone(),
+                                e.root_cause().to_string()
+                            );
                             ui_weak
                                 .upgrade_in_event_loop(move |handle| {
                                     // update fetching status in UI
@@ -605,6 +626,46 @@ pub fn read_wallet(folders: &Vec<String>, pswd: &str) -> Result<Vec<WalletItem>>
         Err(XwError::InputPasswordError.into())
     } else {
         Ok(vm)
+    }
+}
+
+pub fn change_password(pswd: &str, new_pswd: &str) -> Result<()> {
+    let wallet_names = seek_wallet();
+    if wallet_names.is_none() {
+        error!("changing password: no wallet found");
+        return Ok(());
+    }
+    let folders = wallet_names.unwrap();
+
+    let unlocked = AtomicU16::new(0);
+    let _vm: Vec<_> = folders
+        .par_iter()
+        .map(|name| {
+            let mut wallet = xdag_wallet::XWallet::new();
+            if let Err(e) = wallet.unlock(pswd, name) {
+                event!(
+                    Level::ERROR,
+                    "changing password: unlock walllet {} error, {}",
+                    name,
+                    e.root_cause().to_string()
+                );
+            } else if let Err(e) = wallet.change_password(pswd, new_pswd) {
+                event!(
+                    Level::ERROR,
+                    "change {} wallet password error, {}",
+                    name,
+                    e.root_cause().to_string()
+                );
+            } else {
+                unlocked.fetch_add(1, Ordering::Relaxed);
+            }
+        })
+        .collect();
+
+    if unlocked.load(Ordering::Relaxed) == 0 {
+        Err(XwError::ChangePasswordFailedError.into())
+    } else {
+        Ok(())
     }
 }
 
@@ -830,5 +891,14 @@ mod test {
         let render_image = slint::Image::load_from_svg_data(image.as_bytes()).unwrap();
         assert_eq!(render_image.size().width, 259);
         assert_eq!(render_image.size().height, 259);
+    }
+
+    #[test]
+    fn test_change_pswd() {
+        if let Err(e) = change_password("123456", "111111") {
+            println!("Error: {}", e.root_cause().to_string());
+        } else {
+            println!("Password changed successfully");
+        }
     }
 }

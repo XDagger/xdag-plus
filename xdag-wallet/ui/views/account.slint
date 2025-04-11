@@ -3,7 +3,7 @@ import { XButton } from "../modules/surrealism-ui/x_index.slint";
 import { HorizontalBox, Button,LineEdit, TextEdit,VerticalBox,ScrollView } from "std-widgets.slint";
 import {I18n, Language} from "../i18n.slint";
 import {UiWallets,TranxItem,TranxDay,TranxType,FavoriteAddr,ROOT-GLOBAL, WalletAccounts} from "../global.slint";
-import {CreateWallet,ImportWallet, Contacts,Qrcode,MnemonicWin,Transaction,
+import {CreateWallet,ImportWallet, Contacts,Qrcode,MnemonicWin,Transaction, SecurityWin,
     XlineEdit,LanguageWin,NetworkWin,SendWin,DelContact,DelWallet,ErrorWin, RenameWallet} from "../components/index.slint";
 import { PasswordView } from "./password.slint";
 
@@ -1147,6 +1147,8 @@ export component AccountsView inherits Rectangle {
                         t3 := TouchArea {
                             mouse-cursor: pointer;
                             clicked => {
+                                WalletAccounts.is-change-pswd = true;
+                                show-password-check = true;
                             }
                         }
                     }
@@ -1441,12 +1443,19 @@ export component AccountsView inherits Rectangle {
         go-back => {
             show-password-check = false;
             show-send-win = false;
+            WalletAccounts.is-change-pswd = false;
         }
         check_password(ps) => {
             if WalletAccounts.is-lock {
                 // lock screen
                 WalletAccounts.is-lock = ps != UiWallets.ui-wallets[0].password;
                 show-password-check = ps != UiWallets.ui-wallets[0].password;
+            } else if WalletAccounts.is-change-pswd {
+                show-password-check = ps != UiWallets.ui-wallets[0].password;
+                security-win.win-title = i18n.desktop_change_password;
+                security-win.visible = true;
+                security-win.reinput();
+                security-win.show-btn();
             } else {
                 show-password-check = ps != UiWallets.ui-wallets[0].password;
                 if ps == UiWallets.ui-wallets[0].password && !show-send-win {
@@ -1520,6 +1529,19 @@ export component AccountsView inherits Rectangle {
         action(index, name) => {
             WalletAccounts.rename-wallet(self.old-name,name);
             UiWallets.ui-wallets[index].name = name;
+        }
+    }
+
+    security-win := SecurityWin {
+        visible: false;
+        close => {
+            self.visible = false;
+            WalletAccounts.is-change-pswd = false;
+        }
+        check_password(pswd) => {
+            self.visible = false;
+            WalletAccounts.is-change-pswd = false;
+            WalletAccounts.change-password(UiWallets.ui-wallets[0].password,pswd);
         }
     }
 

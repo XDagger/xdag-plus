@@ -1,0 +1,374 @@
+import { HorizontalBox, LineEdit, Button  } from "std-widgets.slint";
+import {I18n, Language} from "../i18n.slint";
+import {ROOT_GLOBAL, WalletAccounts} from "../global.slint";
+import { XButton } from "../modules/surrealism-ui/x_index.slint";
+import { SText } from "../modules/surrealism-ui/index.slint";
+
+export component SecurityWin inherits Rectangle {
+    in-out property <bool> is-new:true; // input password for new creating wallet
+    private property <bool> show-pswd:false;
+    private property <string> pswd;
+    in-out property <string> win-title <=> title.text;
+    callback check_password(string);
+    callback close();
+    i18n := I18n {
+        lang <=> Language.name;
+    }
+
+    init => {
+        p1.focus()
+    }
+    width: 100%;
+    height: 100%;
+    background: ROOT-GLOBAL.bgColorMask-transparent;
+    Rectangle {
+        z: 222;
+        width: root.width * 50%;
+        height: root.height * 50%;
+        border-color: ROOT-GLOBAL.borderColor;
+        border-width: 1px;
+        background: ROOT-GLOBAL.bgColor;
+        border-radius: 10px;
+        HorizontalLayout {
+            y: 0;
+            width: 100%;
+            height: 40px;
+            padding-left: 20px;
+            padding-right: 10px;
+            padding-top: 8px;
+            spacing: 8px;
+            SText {
+                horizontal-alignment: left;
+                font-size: 20px;
+                font-weight: 900;
+                min-width: 200px;
+                text: i18n.security;
+            }
+
+            Rectangle { }
+
+            XButton {
+                font-size: 16px;
+                text: "";
+                height: parent.height * 80%;
+                width: parent.height * 80%;
+                icon: @image-url("../assets/backspace.svg");
+                show-icon: true;
+                round: true;
+                clicked => {
+                    reinput();
+                }
+            }
+
+            XButton {
+                font-size: 16px;
+                text: "";
+                height: parent.height * 80%;
+                width: parent.height * 80%;
+                icon: @image-url("../assets/visibility.svg");
+                show-icon: true;
+                round: true;
+                clicked => {
+                    show-pswd = !show-pswd;
+                    if show-pswd {
+                        self.icon = @image-url("../assets/visibility_off.svg");
+                        toggle(InputType.text)
+                    } else {
+                        self.icon = @image-url("../assets/visibility.svg");
+                        toggle(InputType.password)
+                    }
+                }
+            }
+
+            XButton {
+                font-size: 16px;
+                text: "";
+                height: parent.height * 80%;
+                width: parent.height * 80%;
+                icon: @image-url("../assets/close.svg");
+                show-icon: true;
+                round: true;
+                clicked => {
+                    close();
+                }
+            }
+        }
+
+        VerticalLayout {
+            height: 30%;
+            HorizontalBox {
+                alignment: center;
+                title := SText {
+                    min-width: 300px;
+                    horizontal-alignment: center;
+                    font-size: 18px;
+                    text: i18n.desktop_enter_password;
+                }
+            }
+
+            HorizontalBox {
+                spacing: 30px;
+                alignment: center;
+                p1 := LineEdit {
+                    font-size: 16px;
+                    width: 45px;
+                    height: 43px;
+                    input-type: password;
+                    horizontal-alignment: center;
+                    placeholder-text: "";
+                    edited => {
+                        if self.text != "" {
+                            p2.focus();
+                            p2.read-only = false;
+                            self.read-only = true;
+                        }
+                    }
+                }
+
+                p2 := LineEdit {
+                    font-size: 16px;
+                    width: 45px;
+                    height: 43px;
+                    input-type: password;
+                    horizontal-alignment: center;
+                    placeholder-text: "";
+                    read-only: true;
+                    edited => {
+                        if self.text != "" {
+                            p3.focus();
+                            p3.read-only = false;
+                            self.read-only = true;
+                        }
+                    }
+                    key-released(event) => {
+                        if event.text == Key.Backspace {
+                            err.visible = false;
+                            p1.text = "";
+                            p1.read-only = false;
+                            p1.focus();
+                            self.read-only = true;
+                        }
+                        return EventResult.accept;
+                    }
+                }
+
+                p3 := LineEdit {
+                    font-size: 16px;
+                    width: 45px;
+                    height: 43px;
+                    input-type: password;
+                    horizontal-alignment: center;
+                    placeholder-text: "";
+                    read-only: true;
+                    edited => {
+                        if self.text != "" {
+                            p4.focus();
+                            p4.read-only = false;
+                            self.read-only = true;
+                        }
+                    }
+                    key-released(event) => {
+                        if event.text == Key.Backspace {
+                            err.visible = false;
+                            p2.text = "";
+                            p2.read-only = false;
+                            p2.focus();
+                            self.read-only = true;
+                        }
+                        return EventResult.accept;
+                    }
+                }
+
+                p4 := LineEdit {
+                    font-size: 16px;
+                    width: 45px;
+                    height: 43px;
+                    input-type: password;
+                    horizontal-alignment: center;
+                    placeholder-text: "";
+                    read-only: true;
+                    edited => {
+                        if self.text != "" {
+                            p5.focus();
+                            p5.read-only = false;
+                            self.read-only = true;
+                        }
+                    }
+                    key-released(event) => {
+                        if event.text == Key.Backspace {
+                            err.visible = false;
+                            p3.text = "";
+                            p3.read-only = false;
+                            p3.focus();
+                            self.read-only = true;
+                        }
+                        return EventResult.accept;
+                    }
+                }
+
+                p5 := LineEdit {
+                    font-size: 16px;
+                    width: 45px;
+                    height: 43px;
+                    input-type: password;
+                    horizontal-alignment: center;
+                    placeholder-text: "";
+                    read-only: true;
+                    edited => {
+                        if self.text != "" {
+                            p6.focus();
+                            p6.read-only = false;
+                            self.read-only = true;
+                        }
+                    }
+                    key-released(event) => {
+                        if event.text == Key.Backspace {
+                            err.visible = false;
+                            p4.text = "";
+                            p4.read-only = false;
+                            p4.focus();
+                            self.read-only = true;
+                        }
+                        return EventResult.accept;
+                    }
+                }
+
+                p6 := LineEdit {
+                    font-size: 16px;
+                    width: 45px;
+                    height: 43px;
+                    input-type: password;
+                    horizontal-alignment: center;
+                    placeholder-text: "";
+                    read-only: true;
+                    edited => {
+                        if win-title == i18n.desktop_change_password && self.text != "" {
+                            self.read-only = true;
+                            err.visible = false;
+                        }
+                        if win-title == i18n.desktop_repeat_password && self.text != "" {
+                            self.read-only = true;
+                            err.visible = false;
+                            complete-timer.running = true;
+                        }
+                    }
+                    key-released(event) => {
+                        if err.visible && event.text == Key.Backspace {
+                            self.text = "";
+                            err.visible = false;
+                            self.read-only = false;
+                        } else if event.text == Key.Backspace {
+                            err.visible = false;
+                            p5.text = "";
+                            p5.read-only = false;
+                            p5.focus();
+                            self.read-only = true;
+                        }
+                        return EventResult.accept;
+                    }
+                    key-pressed(event) => {
+                        if event.repeat && event.text == Key.Backspace {
+                            p1.text = "";
+                            p2.text = "";
+                            p3.text = "";
+                            p4.text = "";
+                            p5.text = "";
+                            p6.text = "";
+                            p1.read-only = false;
+                            p1.focus();
+                            err.visible = false;
+                            return EventResult.accept;
+                        } else {
+                            return EventResult.reject;
+                        }
+                    }
+                }
+            }
+
+            HorizontalBox {
+                alignment: center;
+                err := SText {
+                    visible: false;
+                    min-width: 400px;
+                    horizontal-alignment: center;
+                    color: Colors.red;
+                    font-size: 16px;
+                    text: i18n.desktop_repeat_password_error;
+                }
+            }
+
+            HorizontalBox {
+                padding-left: 20px;
+                padding-right: 20px;
+                back := Button {
+                    min-width: 100px;
+                    visible: false;
+                    text: i18n.back;
+                    clicked => {
+                        self.visible = false;
+                        reinput();
+                        continue.visible = true;
+                    }
+                }
+
+                Rectangle { }
+
+                continue := Button {
+                    min-width: 100px;
+                    primary: true;
+                    text: i18n.continueText;
+                    enabled: !(p1.text.is-empty || p2.text.is-empty || p3.text.is-empty || p4.text.is-empty || p5.text.is-empty || p6.text.is-empty);
+                    clicked => {
+                        pswd = p1.text + p2.text + p3.text + p4.text + p5.text + p6.text;
+                        win-title = i18n.desktop_repeat_password;
+                        reinput();
+                        back.visible = true;
+                        self.visible = false;
+                    }
+                }
+            }
+        }
+
+        complete-timer := Timer {
+            interval: 150ms;
+            running: false;
+            triggered => {
+                self.running = false;
+                err.visible = pswd != p1.text + p2.text + p3.text + p4.text + p5.text + p6.text;
+                if err.visible {
+                    p6.focus();
+                } else {
+                    check_password(pswd);
+                }
+            }
+        }
+    }
+
+    function toggle(typ: InputType) {
+        p1.input-type = typ;
+        p2.input-type = typ;
+        p3.input-type = typ;
+        p4.input-type = typ;
+        p5.input-type = typ;
+        p6.input-type = typ;
+    }
+    public function reinput() {
+        p1.text = "";
+        p2.text = "";
+        p3.text = "";
+        p4.text = "";
+        p5.text = "";
+        p6.text = "";
+        p1.read-only = false;
+        p1.focus();
+        err.visible = false;
+    }
+    public function show-btn() {
+        continue.visible = true;
+        back.visible = false;
+    }
+    TouchArea {
+        clicked => {
+        }
+    }
+}
