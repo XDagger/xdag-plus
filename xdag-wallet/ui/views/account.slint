@@ -36,6 +36,7 @@ export component AccountsView inherits Rectangle {
     }
 
     init => {
+        toAddress.focus_me();
         WalletAccounts.current-address = UiWallets.ui-wallets[0].address;
         WalletAccounts.current-password = UiWallets.ui-wallets[0].password;
         WalletAccounts.current-balance = "0.00";
