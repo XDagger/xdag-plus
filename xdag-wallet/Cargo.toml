@@ -72,3 +72,4 @@ rustls-webpki = "0.102"
 
 [build-dependencies]
 slint-build = "1.10.0"
+winres = "0.1.12"
