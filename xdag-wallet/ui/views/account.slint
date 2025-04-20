@@ -69,6 +69,7 @@ export component AccountsView inherits Rectangle {
                             walletName := SText {
                                 font-size: 30px;
                                 font-weight: 800;
+                                min-width: 400px;
                                 text: UiWallets.ui-wallets[active-index].name;
                                 color: ROOT-GLOBAL.bgColorMask2;
                             }
@@ -706,6 +707,7 @@ export component AccountsView inherits Rectangle {
                                     HorizontalBox {
                                         wlt-name := SText {
                                             text: wlt.name;
+                                            min-width: 250px;
                                             font-size: 24px;
                                             font-weight: 800;
                                         }
@@ -1536,6 +1538,9 @@ export component AccountsView inherits Rectangle {
         action(index, name) => {
             WalletAccounts.rename-wallet(self.old-name,name);
             UiWallets.ui-wallets[index].name = name;
+            if index == active-index {
+                walletName.text = name;
+            }
         }
     }
 
