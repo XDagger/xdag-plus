@@ -1,6 +1,6 @@
 [package]
 name = "xdag-plus"
-version = "0.1.0"
+version = "0.1.2"
 edition = "2021"
 authors = ["swordlet <swordlet@qq.com>"]
 build = "build.rs"
@@ -56,7 +56,7 @@ hex = "0.4.3"
 
 reqwest = { version = "0.12.15", features = [
     "json",
-    "rustls-tls-native-roots",
+    "rustls-tls-webpki-roots",
 ], default-features = false }
 tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread"] }
 serde = { version = "1.0", features = ["derive"] }
