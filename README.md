@@ -16,6 +16,9 @@ It supports new 12 words generation and 12 ~ 24 words importation.
 cargo build --release
 ```
 
+## Platforms
+support Linux, Windows, MacOS
+
 ## Acknowlegement
 
 https://github.com/syf20020816/SurrealismUI
