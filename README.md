@@ -17,7 +17,7 @@ cargo build --release
 ```
 
 ## Platforms
-support Linux, Windows, MacOS
+support Linux, Windows, MacOS ( Android and Wasm are in the plan)
 
 ## Acknowlegement
 
