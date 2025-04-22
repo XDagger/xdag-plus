@@ -12,7 +12,7 @@ use crate::error::XwError;
 pub struct Config {
     pub istest: bool,
     pub language: String,
-    pub favorite: Vec<(String, String)>,
+    pub favorite: Vec<(String, String)>, // (address, name)
 }
 
 fn read_config(path: &str) -> Result<Config, XwError> {
@@ -38,7 +38,7 @@ pub fn get_config() -> Result<Config, XwError> {
             istest: false,
             language: DEFAULT_LANGUAGE.to_string(),
             favorite: vec![(
-                "4duPWMbYUgAifVYkKDCWxLvRRkSByf5gb".to_string(),
+                "PKcBtHWDSnAWfZntqWPBLedqBShuKSTzS".to_string(),
                 "Community Fund".to_string(),
             )],
         };
@@ -47,7 +47,17 @@ pub fn get_config() -> Result<Config, XwError> {
         return Ok(default_config);
     }
     let path_str = path.to_str().ok_or(XwError::ConfigPath2StrError)?;
-    let config = read_config(path_str)?;
+    let mut config = read_config(path_str)?;
+
+    if config.favorite.is_empty() {
+        config.favorite.push((
+            "PKcBtHWDSnAWfZntqWPBLedqBShuKSTzS".to_string(),
+            "Community Fund".to_string(),
+        ));
+    } else if config.favorite[0].0 != "PKcBtHWDSnAWfZntqWPBLedqBShuKSTzS".to_string() {
+        config.favorite[0].0 = "PKcBtHWDSnAWfZntqWPBLedqBShuKSTzS".to_string();
+        config.favorite[0].1 = "Community Fund".to_string();
+    }
 
     Ok(config)
 }
