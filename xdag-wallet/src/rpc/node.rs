@@ -87,13 +87,13 @@ fn transaction_block(
     let t = get_timestamp();
     writer.write_u64::<LittleEndian>(t)?;
 
-    if is_test_net {
-        // header: fee, nonce
-        writer.seek(SeekFrom::Current(32)).unwrap();
-        writer.write_u64::<LittleEndian>(nonce)?;
-    } else {
-        writer.seek(SeekFrom::Current(8)).unwrap();
-    }
+    // if is_test_net {
+    // header: fee, nonce
+    writer.seek(SeekFrom::Current(32)).unwrap();
+    writer.write_u64::<LittleEndian>(nonce)?;
+    // } else {
+    //     writer.seek(SeekFrom::Current(8)).unwrap();
+    // }
 
     // input field: input address
     writer.write_u32::<LittleEndian>(0)?;
@@ -113,11 +113,11 @@ fn transaction_block(
     // remark field
     if !remark.is_empty() {
         writer.write_all(remark.as_bytes())?;
-        if is_test_net {
-            writer.seek(SeekFrom::Start(160)).unwrap();
-        } else {
-            writer.seek(SeekFrom::Start(128)).unwrap();
-        }
+        // if is_test_net {
+        writer.seek(SeekFrom::Start(160)).unwrap();
+        // } else {
+        //     writer.seek(SeekFrom::Start(128)).unwrap();
+        // }
     }
     // public key field
     writer.write_all(&key.public_key().to_bytes()[1..33])?;
@@ -209,10 +209,7 @@ pub async fn send_xdag(
     remark: &str,
 ) -> Result<String, XwError> {
     let url = if is_test_net { TEST_NODE } else { NODE_RPC };
-    let mut nonce = 0_u64;
-    if is_test_net {
-        nonce = get_tranx_nonce(url, from).await?;
-    }
+    let nonce = get_tranx_nonce(url, from).await?;
     let key = bip44::key_from_mnemonic(mnemonic)?;
     let block = transaction_block(is_test_net, amount, from, to, remark, &key, nonce)?;
     let res = send_transaction(url, &block).await?;
@@ -222,48 +219,48 @@ pub async fn send_xdag(
     Ok(res)
 }
 
-fn get_fields_type(is_test_net: bool, has_remark: bool, pub_key_even: bool) -> u64 {
-    if is_test_net {
-        // 1--E--C--D--[9]--6/7--5--5
-        // header--tranx_nonce--input--output--[remark]--pubKey(even/odd)--sign_r--sign_s
-        let mut fields = 0xdce1_u64;
+fn get_fields_type(_is_test_net: bool, has_remark: bool, pub_key_even: bool) -> u64 {
+    // if is_test_net {
+    // 1--E--C--D--[9]--6/7--5--5
+    // header--tranx_nonce--input--output--[remark]--pubKey(even/odd)--sign_r--sign_s
+    let mut fields = 0xdce1_u64;
 
-        let mut keys = 0x550_u64;
-        if pub_key_even {
-            keys |= 0x06_u64;
-        } else {
-            keys |= 0x07_u64;
-        }
-        keys <<= 16;
-
-        if has_remark {
-            keys <<= 4;
-            fields |= 0x90000_u64;
-        }
-        fields |= keys;
-
-        fields
+    let mut keys = 0x550_u64;
+    if pub_key_even {
+        keys |= 0x06_u64;
     } else {
-        // 1--C--D--[9]--6/7--5--5
-        // header--input--output--[remark]--pubKey(even/odd)--sign_r--sign_s
-        let mut fields = 0xdc1_u64;
-
-        let mut keys = 0x550_u64;
-        if pub_key_even {
-            keys |= 0x06_u64;
-        } else {
-            keys |= 0x07_u64;
-        }
-        keys <<= 12;
-
-        if has_remark {
-            keys <<= 4;
-            fields |= 0x9000_u64;
-        }
-        fields |= keys;
-
-        fields
+        keys |= 0x07_u64;
     }
+    keys <<= 16;
+
+    if has_remark {
+        keys <<= 4;
+        fields |= 0x90000_u64;
+    }
+    fields |= keys;
+
+    fields
+    // } else {
+    //     // 1--C--D--[9]--6/7--5--5
+    //     // header--input--output--[remark]--pubKey(even/odd)--sign_r--sign_s
+    //     let mut fields = 0xdc1_u64;
+    //
+    //     let mut keys = 0x550_u64;
+    //     if pub_key_even {
+    //         keys |= 0x06_u64;
+    //     } else {
+    //         keys |= 0x07_u64;
+    //     }
+    //     keys <<= 12;
+    //
+    //     if has_remark {
+    //         keys <<= 4;
+    //         fields |= 0x9000_u64;
+    //     }
+    //     fields |= keys;
+    //
+    //     fields
+    // }
 }
 
 pub fn address_to_hash(addr: &str) -> Result<[u8; 32], XwError> {

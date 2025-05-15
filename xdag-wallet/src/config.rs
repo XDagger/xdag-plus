@@ -54,7 +54,7 @@ pub fn get_config() -> Result<Config, XwError> {
             "PKcBtHWDSnAWfZntqWPBLedqBShuKSTzS".to_string(),
             "Community Fund".to_string(),
         ));
-    } else if config.favorite[0].0 != "PKcBtHWDSnAWfZntqWPBLedqBShuKSTzS".to_string() {
+    } else if config.favorite[0].0 != "PKcBtHWDSnAWfZntqWPBLedqBShuKSTzS" {
         config.favorite[0].0 = "PKcBtHWDSnAWfZntqWPBLedqBShuKSTzS".to_string();
         config.favorite[0].1 = "Community Fund".to_string();
     }
