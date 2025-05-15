@@ -542,16 +542,16 @@ export component AccountsView inherits Rectangle {
             width: parent.width * 82%;
             padding-top: 3px;
             padding-right: 10px;
-            height: 32px;
+            height: 38px;
             alignment: end;
             spacing: 8px;
             Rectangle {
-                height: 24px;
+                height: 32px;
                 width: 65px;
                 netType := SText {
                     color: WalletAccounts.is-test ? ROOT_GLOBAL.redColor : ROOT_GLOBAL.greenColor;
                     vertical-alignment: bottom;
-                    font-size: 14px;
+                    font-size: 16px;
                     font-weight: 800;
                     text: WalletAccounts.is-test ? @tr("TestNet") : @tr("MainNet");
                 }
@@ -567,8 +567,8 @@ export component AccountsView inherits Rectangle {
             XButton {
                 font-size: 20px;
                 text: "";
-                height: parent.height * 95%;
-                width: parent.height * 95%;
+                height: parent.height * 85%;
+                width: parent.height * 85%;
                 icon: @image-url("../assets/lock.svg");
                 show-icon: true;
                 round: true;
@@ -581,8 +581,8 @@ export component AccountsView inherits Rectangle {
             XButton {
                 font-size: 20px;
                 text: "";
-                height: parent.height * 95%;
-                width: parent.height * 95%;
+                height: parent.height * 85%;
+                width: parent.height * 85%;
                 icon: @image-url("../assets/refresh.svg");
                 show-icon: true;
                 round: true;
@@ -846,6 +846,7 @@ export component AccountsView inherits Rectangle {
         x: parent.width * 18%;
         y: parent.height;
         background: ROOT_GLOBAL.bgColorMask2;
+        border-radius: 8px;
         VerticalLayout {
             padding: 20px;
             alignment: start;
@@ -1014,6 +1015,7 @@ export component AccountsView inherits Rectangle {
         x: parent.width * 18%;
         y: parent.height;
         background: ROOT_GLOBAL.bgColorMask2;
+        border-radius: 8px;
         VerticalLayout {
             padding: 20px;
             // alignment: start;
