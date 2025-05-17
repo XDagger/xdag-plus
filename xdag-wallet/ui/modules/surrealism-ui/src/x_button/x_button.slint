@@ -37,6 +37,7 @@ export component XButton inherits XCard {
     in property <bool> round: DefaultSButtonProps.round;
     in-out property <bool> disabled: DefaultSButtonProps.disabled;
     in-out property <color> colorized:Colors.aqua;
+    in-out property <bool> is-transparent:true;
     clip: DefaultSButtonProps.clip;
     card-width: layout.width;
     card-height: layout.height;
@@ -94,8 +95,8 @@ export component XButton inherits XCard {
             // root.drop-shadow-offset-y: toucharea.has-hover ? ROOT-STYLES.sur-shadow.low3.y : ROOT-STYLES.sur-shadow.low1.y;
         }
         dark when self.theme == Themes.Dark: {
-            root.background: toucharea.has-hover ? UseSurrealismFn.dark-deeper(ROOT-STYLES.sur-theme-colors.dark.weakest) : ROOT-STYLES.sur-theme-colors.dark.deeper;// root.drop-shadow-color: ROOT-STYLES.sur-theme-colors.dark.deepest;
-            root.border-color: toucharea.has-hover ? UseSurrealismFn.dark-deeper(ROOT-STYLES.sur-theme-colors.dark.normal) : ROOT-STYLES.sur-theme-colors.dark.deeper;// root.drop-shadow-blur: toucharea.has-hover ? ROOT-STYLES.sur-shadow.low3.blur : ROOT-STYLES.sur-shadow.low1.blur;
+            root.background: toucharea.has-hover ? ROOT-STYLES.sur-theme-colors.dark.weaker : is-transparent ? transparent : ROOT-STYLES.sur-theme-colors.dark.deepest;// root.drop-shadow-color: ROOT-STYLES.sur-theme-colors.dark.deepest;
+            root.border-color: toucharea.has-hover ? UseSurrealismFn.dark-deeper(ROOT-STYLES.sur-theme-colors.dark.normal) : is-transparent ? transparent : ROOT-STYLES.sur-theme-colors.dark.deepest;// root.drop-shadow-blur: toucharea.has-hover ? ROOT-STYLES.sur-shadow.low3.blur : ROOT-STYLES.sur-shadow.low1.blur;
             // root.drop-shadow-offset-y: toucharea.has-hover ? ROOT-STYLES.sur-shadow.low3.y : ROOT-STYLES.sur-shadow.low1.y;
         }
     ]
