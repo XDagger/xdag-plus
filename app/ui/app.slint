@@ -1,0 +1,33 @@
+import {ROOT_GLOBAL,UiWallets,WalletAccounts,FavoriteAddr,TransxBlockInfo} from "./global.slint";
+import {Language} from "./i18n.slint";
+import { AccountsView,EntryView,PasswordView } from "./views/index.slint";
+
+// re-export for the native code
+export { UiWallets,WalletAccounts,Language,FavoriteAddr,TransxBlockInfo }
+
+export component App inherits Window {
+    default-font-family: ROOT-GLOBAL.font-family;
+    default-font-size: ROOT-GLOBAL.font-size;
+    default-font-weight: ROOT-GLOBAL.font-weight;
+    min-height: ROOT-GLOBAL.window-height;
+    max-height: ROOT-GLOBAL.window-height;
+    min-width: ROOT-GLOBAL.window-width;
+    max-width: ROOT-GLOBAL.window-width;
+    title: @tr("XDAG Plus");
+    icon: @image-url("./assets/logo3.png");
+    // no-frame: true;
+    background: ROOT-GLOBAL.bgColor;
+    in-out property <int> router_index: 1;
+    if router_index == 0:EntryView {
+        wallet-created => {
+            router_index = 2;
+        }
+    }
+    if router_index == 1:PasswordView {
+        is-new: false;
+        check_password(ps) => {
+            return WalletAccounts.check_wallet_pswd(ps);
+        }
+    }
+    if router_index == 2:AccountsView { }
+}

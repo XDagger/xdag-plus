@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["bip32", "xdag-wallet"]
+members = ["bip32","config", "error", "crypto", "rpc", "app","server", "wallet"]
 
 [profile.dev]
 opt-level = 1

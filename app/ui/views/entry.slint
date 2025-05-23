@@ -1,0 +1,266 @@
+import { HorizontalBox,ComboBox, Button } from "std-widgets.slint";
+import { XButton } from "../modules/surrealism-ui/x_index.slint";
+import { SText } from "../modules/surrealism-ui/index.slint";
+import {I18n, Language} from "../i18n.slint";
+import {ROOT_GLOBAL, UiWallets,WalletAccounts} from "../global.slint";
+import { CreateWallet,ImportWallet,ErrorWin } from "../components/index.slint";
+import { PasswordView } from "password.slint";
+
+export component EntryView inherits Rectangle {
+    background: ROOT-GLOBAL.bgColor;
+    property <bool> show_create_win:false;
+    property <bool> show-import-win:false;
+    property <bool> show-password-win:false;
+    property <string> mnemonic-words: "";
+    property <string> wallet-name: "";
+    property <string> wallet-password: "";
+    callback wallet-created();
+    i18n := I18n {
+        lang <=> Language.name;
+    }
+
+    top-bar := HorizontalBox {
+        y: 0;
+        width: 100%;
+        height: 10%;
+        alignment: end;
+        combo-lang := ComboBox {
+            height: parent.height / 2;
+            model: [
+                "English",
+                "简体中文",
+                "Français",
+                "Русский",
+                "Español",
+                "Italiano",
+                "Deutsch",
+                "日本語",
+            ];
+            selected => {
+                if self.current-index == 0 {
+                    Language.name = "en_US";
+                } else if self.current-index == 1 {
+                    Language.name = "zh_CN";
+                } else if self.current-index == 2 {
+                    Language.name = "fr_FR";
+                } else if self.current-index == 3 {
+                    Language.name = "ru_RU";
+                } else if self.current-index == 4 {
+                    Language.name = "es_ES";
+                } else if self.current-index == 5 {
+                    Language.name = "it_IT";
+                } else if self.current-index == 6 {
+                    Language.name = "de_DE";
+                } else if self.current-index == 7 {
+                    Language.name = "ja_JP";
+                }
+                curtain.width = combo-lang.width + 8px;
+                curtain.x = combo-lang.x - 4px;
+                WalletAccounts.set-config();
+            }
+        }
+
+        XButton {
+            font-size: 18px;
+            text: "";
+            height: parent.height / 2;
+            width: parent.height / 2;
+            icon: @image-url("../assets/language.svg");
+            show-icon: true;
+            round: true;
+            clicked => {
+                if curtain.width == 0 {
+                    curtain.width = combo-lang.width + 8px;
+                    curtain.x = combo-lang.x - 4px;
+                } else {
+                    curtain.width = 0;
+                    curtain.x = combo-lang.x - combo-lang.width;
+                }
+            }
+        }
+    }
+
+    curtain := Rectangle {
+        background: ROOT-GLOBAL.bgColor;
+        x: combo-lang.x - 4px;
+        y: combo-lang.y - 4px;
+        width: combo-lang.width + 8px;
+        height: combo-lang.height + 8px;
+        TouchArea { }
+
+        animate x {
+            duration: 250ms;
+            easing: ease;
+        }
+        animate width {
+            duration: 250ms;
+            easing: ease;
+        }
+    }
+
+    Rectangle {
+        y: top-bar.height;
+        width: 45%;
+        layout := VerticalLayout {
+            alignment: center;
+            Rectangle {
+                height: 10%;
+            }
+
+            Image {
+                width: 25%;
+                height: 25%;
+                source: @image-url("../assets/logo.png");
+            }
+
+            Rectangle {
+                height: 2%;
+            }
+
+            SText {
+                font-weight: 1000;
+                horizontal-alignment: center;
+                text: @tr("XDAG Plus");
+            }
+
+            Rectangle {
+                height: 10%;
+            }
+
+            btn-create := Button {
+                // font-weight: 600;
+                // width: 100%;
+                primary: true;
+                text: i18n.desktop_createWallet;
+                clicked => {
+                    if curtain.width == 0 {
+                        curtain.width = combo-lang.width + 8px;
+                        curtain.x = combo-lang.x - 4px;
+                    }
+                    mnemonic-words = "";
+                    show_password_win = true;
+                }
+            }
+
+            Rectangle {
+                height: 5%;
+            }
+
+            Button {
+                // font-weight: 600;
+                // width: 100%;
+                text: i18n.desktop_importWallet;
+                //@tr("I already have a Wallet");
+                clicked => {
+                    if curtain.width == 0 {
+                        curtain.width = combo-lang.width + 8px;
+                        curtain.x = combo-lang.x - 4px;
+                    }
+                    show_import_win = true;
+                }
+            }
+
+            Rectangle {
+                height: 15%;
+            }
+
+            SText {
+                font-weight: 300;
+                color: ROOT-GLOBAL.versionColor;
+                horizontal-alignment: center;
+                text: ROOT-GLOBAL.version;
+            }
+
+            Rectangle {
+                height: 10%;
+            }
+        }
+    }
+
+    if show_create_win: create-win := Rectangle {
+        width: 100%;
+        height: 100%;
+        background: ROOT-GLOBAL.bgColorMask-transparent;
+        CreateWallet {
+            z: 111;
+            width: root.width * 55%;
+            height: root.height * 50%;
+            lang-name: Language.name;
+            close => {
+                show_create_win = false;
+                mnemonic-words = "";
+                wallet-password = "";
+            }
+            action(name, pswd) => {
+                WalletAccounts.create-wallet(name, wallet-password, mnemonic-words);
+                if UiWallets.ui-wallets.length > 0 {
+                    wallet-created();
+                }
+            }
+        }
+
+        TouchArea { }
+    }
+    if show-import-win:  Rectangle {
+        width: 100%;
+        height: 100%;
+        background: ROOT-GLOBAL.bgColorMask-transparent;
+        ImportWallet {
+            lang-name: Language.name;
+            z: 111;
+            width: root.width * 55%;
+            height: root.height * 50%;
+            placehold: i18n.mnemonic_hint_1;
+            btn-text: i18n.continueText;
+            close => {
+                show-import-win = false;
+            }
+            action(words) => {
+                mnemonic-words = words;
+                show-password-win = true;
+            }
+        }
+
+        TouchArea { }
+    }
+    if show-password-win:PasswordView {
+        win-title: i18n.desktop_create_password; // Initial title
+        go-back() => {
+            if wallet-password != "" {
+                wallet-password = "";
+                self.win-title = i18n.desktop_create_password;
+                self.reinput();
+            } else {
+                show-password-win = false;
+                if mnemonic-words != "" {
+                    show-import-win = true;
+                }
+            }
+        }
+        check_password(pswd) => {
+            if wallet-password == "" {
+                wallet-password = pswd;
+                self.win-title = i18n.desktop_repeat_password;
+                self.reinput();
+                return true;
+            } else {
+                if wallet-password == pswd {
+                    show-password-win = false;
+                    show_create_win = true;
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+    }
+    err-win := ErrorWin {
+        visible: WalletAccounts.err-visible;
+        lang-name: Language.name;
+        message: WalletAccounts.err-message;
+        close => {
+            WalletAccounts.err-visible = false;
+            // self.visible = false;
+        }
+    }
+}

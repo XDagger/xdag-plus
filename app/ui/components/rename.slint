@@ -1,0 +1,115 @@
+import { SText, SDivider } from "../modules/surrealism-ui/index.slint";
+import { XButton } from "../modules/surrealism-ui/x_index.slint";
+import { Themes } from "../modules/surrealism-ui/use/index.slint";
+import { Button, HorizontalBox, LineEdit, CheckBox } from "std-widgets.slint";
+import {I18n} from "../i18n.slint";
+import {ROOT_GLOBAL, WalletAccounts, UiWallets} from "../global.slint";
+import { XlineEdit } from "xline-edit.slint";
+
+export component RenameWallet inherits Rectangle {
+    in-out property <string> lang-name;
+    in-out property <string> old-name;
+    in-out property <string> new-name <=> name.text;
+    in-out property <int> index;
+    callback close();
+    callback action(int, string);
+    i18n := I18n {
+        lang <=> lang-name;
+    }
+
+    z: 333;
+    width: 100%;
+    height: 100%;
+    background: ROOT-GLOBAL.bgColorMask-transparent;
+    Rectangle {
+        border-color: ROOT-GLOBAL.borderColor;
+        border-width: 1px;
+        border-radius: 10px;
+        background: ROOT-GLOBAL.bgColor;
+        z: 555;
+        width: root.width * 50%;
+        height: root.height * 40%;
+        SText {
+            x: 8px;
+            y: 10px;
+            font-size: 20px;
+            font-weight: 900;
+            width: parent.width * 50%;
+            text: i18n.change_wallet_name;
+        }
+
+        top-bar := HorizontalBox {
+            y: 0;
+            width: 100%;
+            height: 40px;
+            alignment: end;
+            XButton {
+                font-size: 16px;
+                text: "";
+                height: parent.height * 70%;
+                width: parent.height * 70%;
+                icon: @image-url("../assets/close.svg");
+                show-icon: true;
+                round: true;
+                clicked => {
+                    close();
+                }
+            }
+        }
+
+        SDivider {
+            y: 50px;
+            width: 100%;
+        }
+
+        VerticalLayout {
+            width: 90%;
+            alignment: center;
+            Rectangle {
+                height: 15%;
+            }
+
+            SText {
+                font-size: 18px;
+                font-weight: 800;
+                text: i18n.walletName;
+            }
+
+            Rectangle {
+                height: 6%;
+            }
+
+            name := XlineEdit {
+                lang-name: lang-name;
+                font-size: 16px;
+                height: 40px;
+                placeholder-text: i18n.walletName;
+            }
+
+            Rectangle {
+                height: 15%;
+            }
+
+            HorizontalBox {
+                alignment: end;
+                Button {
+                    primary: true;
+                    min-width: 100px;
+                    text: i18n.continueText;
+                    enabled: name.text != "";
+                    clicked => {
+                        if name.text != old-name {
+                            action(index, name.text);
+                        }
+                        close();
+                    }
+                }
+            }
+        }
+    }
+
+    TouchArea {
+        clicked => {
+        }
+    }
+}

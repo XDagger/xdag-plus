@@ -1,0 +1,55 @@
+import { TextEdit } from "std-widgets.slint";
+import {I18n} from "../i18n.slint";
+
+export component XtextEdit { // TextEdit control with i18n context menu
+    in-out property <string> lang-name;
+    in-out property <string> text <=> edit.text;
+    in-out property <length> font-size <=> edit.font-size;
+    in-out property <string> placeholder-text <=> edit.placeholder-text;
+    in-out property <TextHorizontalAlignment> horizontal-alignment <=> edit.horizontal-alignment;
+    in-out property <TextWrap> wrap <=> edit.wrap;
+    callback text-edited(string);
+    i18n := I18n {
+        lang <=> lang-name;
+    }
+
+    edit := TextEdit {
+        width: parent.width;
+        height: parent.height;
+        edited(text) => {
+            text-edited(text);
+        }
+    }
+
+    ContextMenuArea {
+        Menu {
+            MenuItem {
+                title: i18n.cut;
+                activated => {
+                    edit.cut();
+                }
+            }
+
+            MenuItem {
+                title: i18n.copy;
+                activated => {
+                    edit.copy();
+                }
+            }
+
+            MenuItem {
+                title: i18n.paste;
+                activated => {
+                    edit.paste();
+                }
+            }
+
+            MenuItem {
+                title: i18n.select_all;
+                activated => {
+                    edit.select-all();
+                }
+            }
+        }
+    }
+}

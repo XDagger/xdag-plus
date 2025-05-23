@@ -1,0 +1,49 @@
+import {ROOT_GLOBAL, WalletAccounts, UiWallets} from "../global.slint";
+
+export component Qrcode inherits Rectangle {
+    callback close();
+    width: 100%;
+    height: 100%;
+    background: ROOT-GLOBAL.bgColorMask-transparent;
+    Rectangle {
+        background: ROOT-GLOBAL.bgColorMask;
+        border-radius: 10px;
+        border-width: 1px;
+        border-color: ROOT-GLOBAL.mainColor;
+        padding: 10px;
+        z: 111;
+        width: 320px;
+        height: 320px;
+        Image {
+            accessible-label: "QR Code";
+            source: WalletAccounts.qrcode;
+            width: 300px;
+            height: 300px;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+
+        Image {
+            z: 222;
+            x: 140px;
+            y: 140px;
+            width: 40px;
+            height: 40px;
+            source: @image-url("../assets/logo2.png");
+        }
+
+        TouchArea {
+            mouse-cursor: pointer;
+            width: 100%;
+            height: 100%;
+            clicked => {
+                close();
+            }
+        }
+    }
+
+    TouchArea {
+        clicked => {
+        }
+    }
+}
