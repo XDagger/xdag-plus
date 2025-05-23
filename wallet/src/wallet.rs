@@ -1,13 +1,13 @@
 use super::bip44::key_from_mnemonic;
-use crate::crypto::*;
-use crate::error::XwError;
 use anyhow::Result;
 use bcrypt::*;
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
+use crypto::*;
 use directories::ProjectDirs;
 use rand::prelude::*;
 use std::fs::File;
 use std::io::{Cursor, Read, Write};
+use xerror::XwError;
 
 const VERSION: u32 = 4;
 const SALT_LENGTH: usize = 16;
@@ -28,7 +28,11 @@ pub struct XWallet {
     pub address: String,
     pub aes_key: [u8; 24],
 }
-
+impl Default for XWallet {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl XWallet {
     pub fn new() -> Self {
         XWallet {

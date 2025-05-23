@@ -14,8 +14,8 @@ pub enum XwError {
     BipError(#[from] bip32::Error),
     #[error("History query error")]
     HistoryQueryError(#[from] reqwest::Error),
-    #[error("Node rpc communicate error")]
-    NodeRpcError(#[from] jsonrpsee::core::client::error::Error),
+    // #[error("Node rpc communicate error")]
+    // NodeRpcError(#[from] jsonrpsee::core::client::error::Error),
     #[error("Transaction nonce parse error")]
     NonceParseError(#[from] std::num::ParseIntError),
     #[error("bs58 decode error")]

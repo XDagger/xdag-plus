@@ -8,7 +8,7 @@ use self::bip44::{create_root_key, derive_bip44_key};
 mod wallet;
 pub use self::wallet::*;
 
-use crate::crypto::hash160;
+use crypto::hash160;
 
 pub fn seek_wallet() -> Option<Vec<String>> {
     if let Some(proj_dir) = ProjectDirs::from("com", "xdagger", "xdag plus") {
