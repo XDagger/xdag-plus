@@ -17,8 +17,9 @@ cargo build --release
 ```
 
 ## Platforms
+
 support Linux, Windows, MacOS ( Android and Wasm are in the plan)
 
 ## Acknowlegement
 
-https://github.com/syf20020816/SurrealismUI
+<https://github.com/syf20020816/SurrealismUI>
