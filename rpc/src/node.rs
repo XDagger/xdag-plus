@@ -1,11 +1,11 @@
-use crate::crypto::sha256;
-use crate::error::XwError;
-use crate::xdag_wallet::bip44;
 use bip32::secp256k1::ecdsa::{signature::Signer, Signature};
 use byteorder::{LittleEndian, WriteBytesExt};
+use crypto::sha256;
 use jsonrpsee::core::client::ClientT;
 use jsonrpsee::http_client::HttpClientBuilder;
 use jsonrpsee::rpc_params;
+use wallet::bip44;
+use xerror::XwError;
 
 use std::io::{Cursor, Seek, SeekFrom, Write};
 use std::time::{Duration, SystemTime};
@@ -375,7 +375,7 @@ mod test {
     fn test_transaction_block() {
         let mnemonic =
             "caught industry sorry science symbol life club sausage kitten tourist shadow transfer";
-        if let Ok(key) = crate::xdag_wallet::bip44::key_from_mnemonic(mnemonic) {
+        if let Ok(key) = wallet::bip44::key_from_mnemonic(mnemonic) {
             let from = "Fii9BuhR1KogfNzWbtSH1YJgQQDwFMomK";
             let to = "Fve2AF8NrEPjNcAj5BABTBeqn7LW7WfeT";
             let block = transaction_block(true, 1.5, from, to, "hello", &key, 111);
@@ -392,7 +392,7 @@ mod test {
 
         let mnemonic =
             "caught industry sorry science symbol life club sausage kitten tourist shadow transfer";
-        let key = crate::xdag_wallet::bip44::key_from_mnemonic(mnemonic).unwrap();
+        let key = wallet::bip44::key_from_mnemonic(mnemonic).unwrap();
         let from = "Fii9BuhR1KogfNzWbtSH1YJgQQDwFMomK";
         let nonce = get_tranx_nonce(url, from).await.unwrap();
         let to = "Fve2AF8NrEPjNcAj5BABTBeqn7LW7WfeT";

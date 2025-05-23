@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["bip32", "xerror","config","crypto","wallet"] # "rpc", "app","server", "wallet"]
+members = ["bip32", "xerror","config","crypto","wallet","rpc","app"] #  "app","server" ]
 
 [profile.dev]
 opt-level = 1

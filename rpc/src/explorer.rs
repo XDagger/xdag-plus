@@ -1,7 +1,7 @@
-use crate::error::XwError;
 use reqwest::header::HeaderMap;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::time;
+use xerror::XwError;
 
 const TIMEOUT_SEC: u64 = 10;
 #[derive(Serialize, Deserialize, Debug)]
