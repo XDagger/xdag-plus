@@ -3,7 +3,7 @@ name = "wallet"
 version = "0.1.5"
 edition = "2021"
 authors = ["swordlet <swordlet@qq.com>"]
-description = "xdag cross-platform gui wallet operations"
+description = "xdag cross-platform wallet operations"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
