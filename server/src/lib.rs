@@ -37,9 +37,12 @@ pub async fn main() -> anyhow::Result<()> {
             // Process mnemonic to create wallet
             // ...
             println!();
-            println!("please set wallet password (max length 16 characters):");
+            println!("please set wallet password (at least 6 characters):");
             let pswd = rpassword::read_password().unwrap();
-            println!("please erenter wallet password :");
+            if pswd.len() < 6 {
+                return Err(anyhow::anyhow!("password too short."));
+            }
+            println!("please reenter wallet password :");
             let pswd2 = rpassword::read_password().unwrap();
             if pswd == pswd2 {
                 let mut wallet = XWallet::new();
@@ -73,13 +76,20 @@ pub async fn main() -> anyhow::Result<()> {
     module.register_method::<RpcResult<&str>, _>("Xdag.Unlock", |params, _, _| {
         match params.one::<String>() {
             Ok(pswd) => {
+                if pswd.len() < 6 {
+                    return Err(ErrorObject::owned(
+                        -32001,
+                        "wrong password",
+                        Some("too short"),
+                    ));
+                }
                 let mut wallet = XWallet::new();
                 match wallet.unlock(&pswd, None) {
                     Ok(()) => Ok("success"),
                     Err(e) => Err(ErrorObject::owned(
                         -32001,
-                        e.root_cause().to_string(),
-                        Some("wrong password"),
+                        "wrong password",
+                        Some(e.root_cause().to_string()),
                     )),
                 }
             }
