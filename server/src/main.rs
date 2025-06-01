@@ -28,7 +28,7 @@ fn main() -> Result<()> {
     if let Err(e) = server_lib::main() {
         event!(
             Level::ERROR,
-            "XDAG Plus Server main error: {:?}",
+            "XDAG Plus Server error: {:?}",
             e.root_cause().to_string()
         );
         Err(e)
