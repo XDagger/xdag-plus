@@ -60,7 +60,7 @@ pub fn new_hd_wallet(name: &str, pswd: &str) -> Result<XWallet> {
         mnemonic: mnemonic.phrase().to_string(),
         private_key: pkey,
         public_key: public_key_bytes,
-        name: name.into(),
+        name: Some(name.into()),
         hash160,
         address,
         aes_key: [0_u8; 24],
@@ -69,7 +69,7 @@ pub fn new_hd_wallet(name: &str, pswd: &str) -> Result<XWallet> {
 
 pub fn import_wallet(name: &str, password: &str, mnemonic: &str) -> Result<XWallet> {
     let mut wallet = XWallet::new();
-    wallet.name = name.into();
+    wallet.name = Some(name.into());
     wallet.password = password.into();
     wallet.import_from_mnemonic(mnemonic)?;
     Ok(wallet)
@@ -96,7 +96,7 @@ mod test {
 
             let mut wallet2 = XWallet::new();
 
-            let ret = wallet2.unlock("123456", "bbb");
+            let ret = wallet2.unlock("123456", Some("bbb"));
             println!("{:?}", ret);
             println!("{:?}", wallet2);
         } else {
@@ -112,7 +112,7 @@ mod test {
 
             let mut wallet2 = XWallet::new();
 
-            let ret = wallet2.unlock("123456", "ccc");
+            let ret = wallet2.unlock("123456", Some("ccc"));
             println!("{:?}", ret);
             println!("{:?}", wallet2);
         } else {

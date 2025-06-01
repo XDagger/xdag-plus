@@ -596,7 +596,7 @@ pub fn read_wallet(folders: &Vec<String>, pswd: &str) -> Result<Vec<WalletItem>>
         .par_iter()
         .map(|name| {
             let mut wallet = wallet::XWallet::new();
-            if let Err(_e) = wallet.unlock(pswd, name) {
+            if let Err(_e) = wallet.unlock(pswd, Some(name)) {
                 WalletItem {
                     name: name.into(),
                     locked: true,
@@ -638,7 +638,7 @@ pub fn change_password(pswd: &str, new_pswd: &str) -> Result<()> {
         .par_iter()
         .map(|name| {
             let mut wallet = wallet::XWallet::new();
-            if let Err(e) = wallet.unlock(pswd, name) {
+            if let Err(e) = wallet.unlock(pswd, Some(name)) {
                 event!(
                     Level::ERROR,
                     "changing password: unlock walllet {} error, {}",
@@ -681,7 +681,7 @@ pub fn new_wallet(name: String, pswd: String, mnemonic: Option<String>) -> Resul
     wallet.flush()?;
 
     Ok(WalletItem {
-        name: wallet.name.into(),
+        name: name.into(),
         address: wallet.address.into(),
         locked: false,
         mnemonic: wallet.mnemonic.into(),
