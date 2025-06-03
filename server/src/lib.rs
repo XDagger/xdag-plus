@@ -5,9 +5,17 @@ use jsonrpsee::{
     server::{RpcModule, Server},
     types::ErrorObject,
 };
+use lazy_static::lazy_static;
 use std::path::PathBuf;
+use std::sync::RwLock;
 use tracing::{event, Level};
 use wallet::XWallet;
+
+const PASSWORD_LENGTH: usize = 8;
+
+lazy_static! {
+    static ref GLOBAL_WALLET: RwLock<XWallet> = RwLock::new(XWallet::new());
+}
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -35,24 +43,25 @@ pub async fn main() -> anyhow::Result<()> {
             // Handle mnemonic file
             let mnemonic = std::fs::read_to_string(mnemonic_path)?;
             // Process mnemonic to create wallet
-            // ...
-            println!();
-            println!("please set wallet password (at least 6 characters):");
+            println!(
+                "please set wallet password (at least {} characters):",
+                PASSWORD_LENGTH
+            );
             let pswd = rpassword::read_password().unwrap();
-            if pswd.len() < 6 {
-                return Err(anyhow::anyhow!("password too short."));
+            if pswd.len() < PASSWORD_LENGTH {
+                return Err(anyhow::anyhow!("password too short"));
             }
             println!("please reenter wallet password :");
             let pswd2 = rpassword::read_password().unwrap();
             if pswd == pswd2 {
-                let mut wallet = XWallet::new();
+                let mut wallet = GLOBAL_WALLET.write().unwrap();
                 wallet.password = pswd;
                 wallet.name = None;
                 wallet.import_from_mnemonic(&mnemonic)?;
                 println!("import wallet success.");
-                event!(Level::INFO, "import wallet from mnemonic success.")
+                event!(Level::INFO, "import wallet from mnemonic success")
             } else {
-                return Err(anyhow::anyhow!("passwords not match!"));
+                return Err(anyhow::anyhow!("passwords not match"));
             }
         } else {
             return Err(anyhow::anyhow!(
@@ -76,14 +85,21 @@ pub async fn main() -> anyhow::Result<()> {
     module.register_method::<RpcResult<&str>, _>("Xdag.Unlock", |params, _, _| {
         match params.one::<String>() {
             Ok(pswd) => {
-                if pswd.len() < 6 {
+                if pswd.len() < PASSWORD_LENGTH {
                     return Err(ErrorObject::owned(
                         -32001,
                         "wrong password",
                         Some("too short"),
                     ));
                 }
-                let mut wallet = XWallet::new();
+
+                let mut wallet = GLOBAL_WALLET.write().unwrap();
+                if wallet.password == pswd {
+                    return Ok("success");
+                } else if !wallet.password.is_empty() {
+                    return Err(ErrorObject::owned(-32001, "wrong password", Some("")));
+                }
+                wallet.name = None;
                 match wallet.unlock(&pswd, None) {
                     Ok(()) => Ok("success"),
                     Err(e) => Err(ErrorObject::owned(
