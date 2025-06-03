@@ -113,6 +113,43 @@ pub async fn main() -> anyhow::Result<()> {
         }
     })?;
 
+    module.register_method::<RpcResult<&str>, _>("Xdag.Lock", |params, _, _| {
+        match params.one::<String>() {
+            Ok(pswd) => {
+                if pswd.len() < PASSWORD_LENGTH {
+                    return Err(ErrorObject::owned(
+                        -32001,
+                        "wrong password",
+                        Some("too short"),
+                    ));
+                }
+
+                let mut wallet = GLOBAL_WALLET.write().unwrap();
+                if wallet.password == pswd {
+                    wallet.password = "".to_string();
+                    Ok("success")
+                } else if !wallet.password.is_empty() {
+                    return Err(ErrorObject::owned(-32001, "wrong password", Some("")));
+                } else {
+                    return Err(ErrorObject::owned(
+                        -32002,
+                        "wallet already locked",
+                        Some(""),
+                    ));
+                }
+            }
+            Err(e) => Err(e),
+        }
+    })?;
+
+    module.register_method::<RpcResult<String>, _>("Xdag.Account", |params, _, _| {
+        let wallet = GLOBAL_WALLET.read().unwrap();
+        if wallet.password.is_empty() {
+            return Err(ErrorObject::owned(-32003, "wallet locked", Some("")));
+        }
+        Ok(wallet.address.clone())
+    })?;
+
     let addr = server.local_addr()?;
     println!(
         "XDAG Plus Server listening on {:?}:{:?}",
