@@ -17,7 +17,7 @@ const DATA_FILE_NAME: &str = "xdagj_wallet.bin";
 
 #[derive(Clone, Debug)]
 pub struct XWallet {
-    // pub lock: bool,
+    pub is_test: bool,
     pub password: String,
     pub private_key: [u8; 32],
     pub public_key: [u8; 33],
@@ -36,6 +36,7 @@ impl Default for XWallet {
 impl XWallet {
     pub fn new() -> Self {
         XWallet {
+            is_test: false,
             password: "".to_string(),
             address: "".to_string(),
             mnemonic: "".to_string(),

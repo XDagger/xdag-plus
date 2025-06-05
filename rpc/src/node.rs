@@ -34,7 +34,8 @@ const FEE: f64 = 0.1;
 const TEST_NODE: &str = "https://testnet-rpc.xdagj.org";
 const NODE_RPC: &str = "https://mainnet-rpc.xdagj.org";
 
-pub async fn get_balance(uri: &str, address: &str) -> Result<String, XwError> {
+pub async fn get_balance(is_test_net: bool, address: &str) -> Result<String, XwError> {
+    let uri = if is_test_net { TEST_NODE } else { NODE_RPC };
     let client = HttpClientBuilder::default()
         .request_timeout(Duration::from_secs(18))
         .build(uri)?;
@@ -311,10 +312,10 @@ mod test {
     use super::*;
     #[tokio::test]
     async fn test_get_balance() {
-        let url = "https://testnet-rpc.xdagj.org";
+        // let url = "https://testnet-rpc.xdagj.org";
         let address = "Fii9BuhR1KogfNzWbtSH1YJgQQDwFMomK";
 
-        if let Ok(res) = get_balance(url, address).await {
+        if let Ok(res) = get_balance(true, address).await {
             println!("balance: {:}", res);
         } else {
             println!("test get balance error");

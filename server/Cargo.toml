@@ -24,6 +24,7 @@ bip32 = { path = "../bip32" }
 wallet = {  path = "../wallet" }
 config = { path = "../config" }
 crypto = { path = "../crypto" }
+rpc = { path = "../rpc" }
 rand_core = { version = "0.6.4", features = ["getrandom"] }
 bs58 = { version = "0.5.1", features = ["check"] }
 rand = "0.8.5"

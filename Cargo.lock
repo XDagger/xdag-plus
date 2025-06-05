@@ -5261,6 +5261,7 @@ dependencies = [
  "rayon",
  "reqwest",
  "rpassword",
+ "rpc",
  "rustls",
  "rustls-webpki 0.102.8",
  "serde",

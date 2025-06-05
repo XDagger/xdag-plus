@@ -8,6 +8,7 @@ use jsonrpsee::{
 use lazy_static::lazy_static;
 use std::path::PathBuf;
 use std::sync::RwLock;
+use tokio::runtime::Runtime;
 use tracing::{event, Level};
 use wallet::XWallet;
 
@@ -26,6 +27,8 @@ struct Cli {
     ip: Option<std::net::IpAddr>,
     #[arg(long, help = "Path to the mnemonic file", value_name = "FILE")]
     mnemonic: Option<PathBuf>,
+    #[arg(long, action)]
+    test_net: bool,
 }
 
 #[tokio::main]
@@ -69,7 +72,10 @@ pub async fn main() -> anyhow::Result<()> {
             ));
         }
     }
-
+    {
+        let mut wallet = GLOBAL_WALLET.write().unwrap();
+        wallet.is_test = cli.test_net;
+    }
     let mut addr: String;
     if let Some(ip) = cli.ip {
         addr = ip.to_string();
@@ -142,12 +148,45 @@ pub async fn main() -> anyhow::Result<()> {
         }
     })?;
 
-    module.register_method::<RpcResult<String>, _>("Xdag.Account", |params, _, _| {
+    module.register_method::<RpcResult<String>, _>("Xdag.Account", |_, _, _| {
         let wallet = GLOBAL_WALLET.read().unwrap();
         if wallet.password.is_empty() {
             return Err(ErrorObject::owned(-32003, "wallet locked", Some("")));
         }
         Ok(wallet.address.clone())
+    })?;
+
+    module.register_blocking_method::<RpcResult<String>, _>("Xdag.Balance", |params, _, _| {
+        let wallet = GLOBAL_WALLET.read().unwrap();
+        if wallet.password.is_empty() {
+            return Err(ErrorObject::owned(-32003, "wallet locked", Some("")));
+        }
+        let address = match params.one::<String>() {
+            Ok(addr) => {
+                let res = bs58::decode(&addr).with_check(None).into_vec();
+                if res.is_err() {
+                    return Err(ErrorObject::owned(
+                        -32004,
+                        "invalide address characters",
+                        Some(""),
+                    ));
+                }
+
+                addr.clone()
+            }
+            Err(_) => wallet.address.clone(),
+        };
+        match Runtime::new()
+            .unwrap()
+            .block_on(rpc::get_balance(wallet.is_test, &address))
+        {
+            Ok(balance) => Ok(balance),
+            Err(e) => Err(ErrorObject::owned(
+                -32004,
+                "get balance failed",
+                Some(e.to_string()),
+            )),
+        }
     })?;
 
     let addr = server.local_addr()?;
