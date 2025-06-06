@@ -3072,10 +3072,20 @@ version = "0.24.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37b26c20e2178756451cfeb0661fb74c47dd5988cb7e3939de7e9241fd604d42"
 dependencies = [
- "jsonrpsee-core",
+ "jsonrpsee-core 0.24.9",
  "jsonrpsee-http-client",
+ "jsonrpsee-types 0.24.9",
+]
+
+[[package]]
+name = "jsonrpsee"
+version = "0.25.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1fba77a59c4c644fd48732367624d1bcf6f409f9c9a286fbc71d2f1fc0b2ea16"
+dependencies = [
+ "jsonrpsee-core 0.25.1",
  "jsonrpsee-server",
- "jsonrpsee-types",
+ "jsonrpsee-types 0.25.1",
  "tokio",
 ]
 
@@ -3091,14 +3101,36 @@ dependencies = [
  "http",
  "http-body",
  "http-body-util",
- "jsonrpsee-types",
- "parking_lot",
- "rand 0.8.5",
- "rustc-hash 2.1.1",
+ "jsonrpsee-types 0.24.9",
  "serde",
  "serde_json",
  "thiserror 1.0.69",
  "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "jsonrpsee-core"
+version = "0.25.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "693c93cbb7db25f4108ed121304b671a36002c2db67dff2ee4391a688c738547"
+dependencies = [
+ "async-trait",
+ "bytes",
+ "futures-util",
+ "http",
+ "http-body",
+ "http-body-util",
+ "jsonrpsee-types 0.25.1",
+ "parking_lot",
+ "pin-project",
+ "rand 0.9.1",
+ "rustc-hash 2.1.1",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.12",
+ "tokio",
+ "tower 0.5.2",
  "tracing",
 ]
 
@@ -3114,8 +3146,8 @@ dependencies = [
  "hyper",
  "hyper-rustls",
  "hyper-util",
- "jsonrpsee-core",
- "jsonrpsee-types",
+ "jsonrpsee-core 0.24.9",
+ "jsonrpsee-types 0.24.9",
  "rustls",
  "rustls-platform-verifier",
  "serde",
@@ -3129,9 +3161,9 @@ dependencies = [
 
 [[package]]
 name = "jsonrpsee-server"
-version = "0.24.9"
+version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "55e363146da18e50ad2b51a0a7925fc423137a0b1371af8235b1c231a0647328"
+checksum = "d38b0bcf407ac68d241f90e2d46041e6a06988f97fe1721fb80b91c42584fae6"
 dependencies = [
  "futures-util",
  "http",
@@ -3139,18 +3171,18 @@ dependencies = [
  "http-body-util",
  "hyper",
  "hyper-util",
- "jsonrpsee-core",
- "jsonrpsee-types",
+ "jsonrpsee-core 0.25.1",
+ "jsonrpsee-types 0.25.1",
  "pin-project",
  "route-recognizer",
  "serde",
  "serde_json",
  "soketto",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tokio",
  "tokio-stream",
  "tokio-util",
- "tower 0.4.13",
+ "tower 0.5.2",
  "tracing",
 ]
 
@@ -3164,6 +3196,18 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 1.0.69",
+]
+
+[[package]]
+name = "jsonrpsee-types"
+version = "0.25.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "66df7256371c45621b3b7d2fb23aea923d577616b9c0e9c0b950a6ea5c2be0ca"
+dependencies = [
+ "http",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -4867,7 +4911,7 @@ dependencies = [
  "bs58",
  "byteorder",
  "crypto",
- "jsonrpsee",
+ "jsonrpsee 0.24.9",
  "reqwest",
  "rustls",
  "rustls-webpki 0.102.8",
@@ -5246,29 +5290,16 @@ name = "server"
 version = "0.1.5"
 dependencies = [
  "anyhow",
- "bip32",
  "bs58",
- "byteorder",
  "clap",
- "config",
- "crypto",
- "directories",
- "hex",
- "jsonrpsee",
+ "jsonrpsee 0.25.1",
  "lazy_static",
- "rand 0.8.5",
- "rand_core 0.6.4",
- "rayon",
- "reqwest",
  "rpassword",
  "rpc",
- "rustls",
- "rustls-webpki 0.102.8",
  "serde",
  "serde_json",
  "time",
  "tokio",
- "toml 0.8.20",
  "tracing",
  "tracing-appender",
  "tracing-subscriber",
@@ -7334,7 +7365,7 @@ version = "0.1.5"
 dependencies = [
  "bip32",
  "bs58",
- "jsonrpsee",
+ "jsonrpsee 0.24.9",
  "reqwest",
  "thiserror 2.0.12",
  "toml 0.8.20",

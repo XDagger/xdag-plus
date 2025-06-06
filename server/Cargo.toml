@@ -18,16 +18,9 @@ name = "server_lib"
 
 [dependencies]
 clap = { version = "4.5.38", features = ["derive"] }
-rayon = "1.10.0"
-
-bip32 = { path = "../bip32" }
 wallet = {  path = "../wallet" }
-config = { path = "../config" }
-crypto = { path = "../crypto" }
 rpc = { path = "../rpc" }
-rand_core = { version = "0.6.4", features = ["getrandom"] }
 bs58 = { version = "0.5.1", features = ["check"] }
-rand = "0.8.5"
 
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = [
@@ -44,20 +37,7 @@ anyhow = "1.0.95"
 rpassword = "7.4"
 lazy_static = "1.5.0"
 
-byteorder = "1.5.0"
-hex = "0.4.3"
-
-reqwest = { version = "0.12.15", features = [
-    "json",
-    "rustls-tls-webpki-roots",
-], default-features = false }
 tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-jsonrpsee = { version = "0.24.0", features = ["server"] }
-
-directories = "6.0"
-toml = "0.8.20"
-rustls = "0.23.26"
-rustls-webpki = "0.102"
-
+jsonrpsee = { version = "0.25.1", features = ["server"] }

@@ -54,7 +54,7 @@ pub fn new_hd_wallet(name: &str, pswd: &str) -> Result<XWallet> {
     let hash160 = hash160(&public_key_bytes);
     let address = bs58::encode(hash160).with_check().into_string();
     Ok(XWallet {
-        is_test: false,
+        // lock: false,
         password: pswd.to_string(),
         file: gen_file_path(name),
         mnemonic: mnemonic.phrase().to_string(),

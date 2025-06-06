@@ -6,6 +6,7 @@ use jsonrpsee::{
     types::ErrorObject,
 };
 use lazy_static::lazy_static;
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::RwLock;
 use tokio::runtime::Runtime;
@@ -18,17 +19,39 @@ lazy_static! {
     static ref GLOBAL_WALLET: RwLock<XWallet> = RwLock::new(XWallet::new());
 }
 
+lazy_static! {
+    static ref IS_TEST_NET: RwLock<bool> = RwLock::new(false);
+}
+
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
-    #[arg(long, default_value_t = 10001)]
+    #[arg(short, long, default_value_t = 10001)]
     port: u16,
-    #[arg(long, help = "default is 127.0.0.1")]
+    #[arg(short, long, help = "default is 127.0.0.1")]
     ip: Option<std::net::IpAddr>,
-    #[arg(long, help = "Path to the mnemonic file", value_name = "FILE")]
+    #[arg(short, long, help = "Path to the mnemonic file", value_name = "FILE")]
     mnemonic: Option<PathBuf>,
-    #[arg(long, action)]
+    #[arg(short, long, action)]
     test_net: bool,
+}
+
+#[derive(Deserialize, Clone)]
+struct SendRequest {
+    #[serde(default)]
+    amount: String,
+    #[serde(default)]
+    address: String,
+    #[serde(default)]
+    remark: String,
+}
+
+#[derive(Serialize, Clone)]
+struct SendResult {
+    #[serde(default, rename = "Status")]
+    status: String,
+    #[serde(default, rename = "TxHash")]
+    tx_hash: String,
 }
 
 #[tokio::main]
@@ -72,10 +95,12 @@ pub async fn main() -> anyhow::Result<()> {
             ));
         }
     }
+
     {
-        let mut wallet = GLOBAL_WALLET.write().unwrap();
-        wallet.is_test = cli.test_net;
+        let mut is_test_net = IS_TEST_NET.write().unwrap();
+        *is_test_net = cli.test_net;
     }
+
     let mut addr: String;
     if let Some(ip) = cli.ip {
         addr = ip.to_string();
@@ -88,6 +113,7 @@ pub async fn main() -> anyhow::Result<()> {
         .build(addr.parse::<std::net::SocketAddr>()?)
         .await?;
     let mut module = RpcModule::new(());
+
     module.register_method::<RpcResult<&str>, _>("Xdag.Unlock", |params, _, _| {
         match params.one::<String>() {
             Ok(pswd) => {
@@ -157,6 +183,7 @@ pub async fn main() -> anyhow::Result<()> {
     })?;
 
     module.register_blocking_method::<RpcResult<String>, _>("Xdag.Balance", |params, _, _| {
+        let is_test_net = IS_TEST_NET.read().unwrap();
         let wallet = GLOBAL_WALLET.read().unwrap();
         if wallet.password.is_empty() {
             return Err(ErrorObject::owned(-32003, "wallet locked", Some("")));
@@ -178,7 +205,7 @@ pub async fn main() -> anyhow::Result<()> {
         };
         match Runtime::new()
             .unwrap()
-            .block_on(rpc::get_balance(wallet.is_test, &address))
+            .block_on(rpc::get_balance(*is_test_net, &address))
         {
             Ok(balance) => Ok(balance),
             Err(e) => Err(ErrorObject::owned(
@@ -188,6 +215,66 @@ pub async fn main() -> anyhow::Result<()> {
             )),
         }
     })?;
+
+    module.register_blocking_method::<RpcResult<SendResult>, _>(
+        "Xdag.Transfer",
+        |params, _, _| {
+            let is_test_net = IS_TEST_NET.read().unwrap();
+            let wallet = GLOBAL_WALLET.read().unwrap();
+            if wallet.password.is_empty() {
+                return Err(ErrorObject::owned(-32003, "wallet locked", Some("")));
+            }
+            match params.one::<SendRequest>() {
+                Ok(request) => {
+                    let res = bs58::decode(&request.address).with_check(None).into_vec();
+                    if res.is_err() {
+                        return Err(ErrorObject::owned(-32005, "address format error", Some("")));
+                    }
+
+                    let amount = request.amount.parse::<f64>().unwrap_or(0.0);
+                    if amount == 0.0 {
+                        return Err(ErrorObject::owned(
+                            -32005,
+                            "invalide transfer amount",
+                            Some(""),
+                        ));
+                    }
+                    if rpc::check_remark(&request.remark).is_err() {
+                        return Err(ErrorObject::owned(-32005, "remark format error", Some("")));
+                    }
+                    if wallet.address == request.address {
+                        return Err(ErrorObject::owned(
+                            -32005,
+                            "invalide transfer address",
+                            Some(""),
+                        ));
+                    }
+                    let res = Runtime::new().unwrap().block_on(rpc::send_xdag(
+                        *is_test_net,
+                        &wallet.mnemonic,
+                        &wallet.address,
+                        &request.address,
+                        amount,
+                        &request.remark,
+                    ));
+
+                    if let Err(e) = res {
+                        return Err(ErrorObject::owned(
+                            -32005,
+                            "get nonce from node error",
+                            Some(e.to_string()),
+                        ));
+                    }
+                    let hash = res.unwrap();
+                    Ok(SendResult {
+                        status: "success".to_string(),
+                        tx_hash: hash.clone(),
+                    })
+                }
+                Err(e) => Err(e),
+            }
+        },
+    )?;
 
     let addr = server.local_addr()?;
     println!(

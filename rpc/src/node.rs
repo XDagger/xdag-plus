@@ -140,7 +140,7 @@ fn transaction_block(
     //     .collect())
 }
 
-fn check_remark(remark: &str) -> Result<(), XwError> {
+pub fn check_remark(remark: &str) -> Result<(), XwError> {
     if remark.is_empty() {
         return Ok(());
     }
