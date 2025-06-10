@@ -32,12 +32,12 @@ usage: by command-line parameter -help
 
 first time run server, you need to import a mnemonic file to create a wallet.
 ```bash
-server --ip \<ip address\> --port \<port number\> --mnemonic \<mnemonic file path\>
+server --ip <ip address> --port <port number> --mnemonic <mnemonic file path>
 ```
 
 add --test-net command line parameter when using test net.
 ```bash
-server --ip \<ip address\> --port \<port number\> --test-net
+server --ip <ip address> --port <port number> --test-net
 ```
 
 - jsonrpc server:  server --ip \<ip address\> --port \<port number\>
