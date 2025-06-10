@@ -7,7 +7,7 @@ use std::fs;
 const CONFIG_FILE_NAME: &str = "config.toml";
 const DEFAULT_LANGUAGE: &str = "en_US";
 
-use crate::error::XwError;
+use xerror::XwError;
 #[derive(Serialize, Deserialize)]
 pub struct Config {
     pub istest: bool,

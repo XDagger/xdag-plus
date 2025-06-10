@@ -1,0 +1,27 @@
+[package]
+name = "wallet"
+version = "0.1.5"
+edition = "2021"
+authors = ["swordlet <swordlet@qq.com>"]
+description = "xdag cross-platform wallet operations"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+path = "./src/lib.rs"
+crate-type = ["lib", "cdylib"]
+name = "wallet"
+
+[dependencies]
+bip32 = { path = "../bip32" }
+crypto = { path = "../crypto" }
+xerror = { path = "../xerror" }
+rand_core = { version = "0.6.4", features = ["getrandom"] }
+ripemd = "0.1.3"
+sha2 = "0.10.8"
+bs58 = { version = "0.5.1", features = ["check"] }
+rand = "0.8.5"
+bcrypt = "0.16.0"
+anyhow = "1.0.95"
+byteorder = "1.5.0"
+directories = "6.0"

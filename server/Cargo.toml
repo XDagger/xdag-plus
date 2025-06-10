@@ -1,0 +1,43 @@
+[package]
+name = "server"
+version = "0.1.5"
+edition = "2021"
+authors = ["swordlet <swordlet@qq.com>"]
+description = "a xdag cross-platform wallet server"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+path = "./src/main.rs"
+name = "server"
+
+[lib]
+path = "./src/lib.rs"
+crate-type = ["lib", "cdylib"]
+name = "server_lib"
+
+[dependencies]
+clap = { version = "4.5.38", features = ["derive"] }
+wallet = {  path = "../wallet" }
+rpc = { path = "../rpc" }
+bs58 = { version = "0.5.1", features = ["check"] }
+
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = [
+    "json",
+    "env-filter",
+    "fmt",
+    "time",
+    "local-time",
+] }
+time = "0.3.37"
+tracing-appender = "0.2.3"
+
+anyhow = "1.0.95"
+rpassword = "7.4"
+lazy_static = "1.5.0"
+
+tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+jsonrpsee = { version = "0.25.1", features = ["server"] }

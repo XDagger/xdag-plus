@@ -1,0 +1,20 @@
+[package]
+name = "config"
+version = "0.1.5"
+edition = "2021"
+authors = ["swordlet <swordlet@qq.com>"]
+description = "xdag cross-platform wallet config"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+path = "./src/lib.rs"
+crate-type = ["lib", "cdylib"]
+name = "config"
+
+[dependencies]
+xerror = { path = "../xerror/" }
+anyhow = "1.0.95"
+serde = { version = "1.0", features = ["derive"] }
+directories = "6.0"
+toml = "0.8.20"

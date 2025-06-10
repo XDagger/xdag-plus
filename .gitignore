@@ -4,3 +4,4 @@ target/
 packages/
 *.log
 .DS_Store
+xdagj_wallet/

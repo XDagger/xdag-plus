@@ -12,17 +12,11 @@ use std::thread;
 use qrcode::render::svg;
 use qrcode::QrCode;
 
-mod config;
-mod crypto;
-mod error;
-mod rpc;
 mod winit_helper;
-mod xdag_wallet;
-
-use error::XwError;
 use rpc::*;
+use wallet::*;
 use winit_helper::center_window;
-use xdag_wallet::*;
+use xerror::XwError;
 
 use slint::{ComponentHandle, Model, ModelRc, SharedString, VecModel};
 
@@ -601,8 +595,8 @@ pub fn read_wallet(folders: &Vec<String>, pswd: &str) -> Result<Vec<WalletItem>>
     let vm: Vec<_> = folders
         .par_iter()
         .map(|name| {
-            let mut wallet = xdag_wallet::XWallet::new();
-            if let Err(_e) = wallet.unlock(pswd, name) {
+            let mut wallet = wallet::XWallet::new();
+            if let Err(_e) = wallet.unlock(pswd, Some(name)) {
                 WalletItem {
                     name: name.into(),
                     locked: true,
@@ -643,8 +637,8 @@ pub fn change_password(pswd: &str, new_pswd: &str) -> Result<()> {
     let _vm: Vec<_> = folders
         .par_iter()
         .map(|name| {
-            let mut wallet = xdag_wallet::XWallet::new();
-            if let Err(e) = wallet.unlock(pswd, name) {
+            let mut wallet = wallet::XWallet::new();
+            if let Err(e) = wallet.unlock(pswd, Some(name)) {
                 event!(
                     Level::ERROR,
                     "changing password: unlock walllet {} error, {}",
@@ -687,7 +681,7 @@ pub fn new_wallet(name: String, pswd: String, mnemonic: Option<String>) -> Resul
     wallet.flush()?;
 
     Ok(WalletItem {
-        name: wallet.name.into(),
+        name: name.into(),
         address: wallet.address.into(),
         locked: false,
         mnemonic: wallet.mnemonic.into(),

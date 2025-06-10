@@ -1,0 +1,33 @@
+[package]
+name = "rpc"
+version = "0.1.5"
+edition = "2021"
+authors = ["swordlet <swordlet@qq.com>"]
+description = "xdag cross-platform wallet rpc client"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+path = "./src/lib.rs"
+crate-type = ["lib", "cdylib"]
+name = "rpc"
+
+[dependencies]
+
+bip32 = { path = "../bip32" }
+xerror = { path = "../xerror" }
+wallet = { path = "../wallet" }
+crypto = { path = "../crypto" }
+bs58 = { version = "0.5.1", features = ["check"] }
+anyhow = "1.0.95"
+byteorder = "1.5.0"
+reqwest = { version = "0.12.15", features = [
+    "json",
+    "rustls-tls-webpki-roots",
+], default-features = false }
+tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+jsonrpsee = { version = "0.24.0", features = ["http-client"] }
+rustls = "0.23.26"
+rustls-webpki = "0.102"

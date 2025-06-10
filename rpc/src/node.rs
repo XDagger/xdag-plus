@@ -1,11 +1,11 @@
-use crate::crypto::sha256;
-use crate::error::XwError;
-use crate::xdag_wallet::bip44;
 use bip32::secp256k1::ecdsa::{signature::Signer, Signature};
 use byteorder::{LittleEndian, WriteBytesExt};
+use crypto::sha256;
 use jsonrpsee::core::client::ClientT;
 use jsonrpsee::http_client::HttpClientBuilder;
 use jsonrpsee::rpc_params;
+use wallet::bip44;
+use xerror::XwError;
 
 use std::io::{Cursor, Seek, SeekFrom, Write};
 use std::time::{Duration, SystemTime};
@@ -34,7 +34,8 @@ const FEE: f64 = 0.1;
 const TEST_NODE: &str = "https://testnet-rpc.xdagj.org";
 const NODE_RPC: &str = "https://mainnet-rpc.xdagj.org";
 
-pub async fn get_balance(uri: &str, address: &str) -> Result<String, XwError> {
+pub async fn get_balance(is_test_net: bool, address: &str) -> Result<String, XwError> {
+    let uri = if is_test_net { TEST_NODE } else { NODE_RPC };
     let client = HttpClientBuilder::default()
         .request_timeout(Duration::from_secs(18))
         .build(uri)?;
@@ -139,7 +140,7 @@ fn transaction_block(
     //     .collect())
 }
 
-fn check_remark(remark: &str) -> Result<(), XwError> {
+pub fn check_remark(remark: &str) -> Result<(), XwError> {
     if remark.is_empty() {
         return Ok(());
     }
@@ -311,10 +312,10 @@ mod test {
     use super::*;
     #[tokio::test]
     async fn test_get_balance() {
-        let url = "https://testnet-rpc.xdagj.org";
+        // let url = "https://testnet-rpc.xdagj.org";
         let address = "Fii9BuhR1KogfNzWbtSH1YJgQQDwFMomK";
 
-        if let Ok(res) = get_balance(url, address).await {
+        if let Ok(res) = get_balance(true, address).await {
             println!("balance: {:}", res);
         } else {
             println!("test get balance error");
@@ -375,7 +376,7 @@ mod test {
     fn test_transaction_block() {
         let mnemonic =
             "caught industry sorry science symbol life club sausage kitten tourist shadow transfer";
-        if let Ok(key) = crate::xdag_wallet::bip44::key_from_mnemonic(mnemonic) {
+        if let Ok(key) = wallet::bip44::key_from_mnemonic(mnemonic) {
             let from = "Fii9BuhR1KogfNzWbtSH1YJgQQDwFMomK";
             let to = "Fve2AF8NrEPjNcAj5BABTBeqn7LW7WfeT";
             let block = transaction_block(true, 1.5, from, to, "hello", &key, 111);
@@ -392,7 +393,7 @@ mod test {
 
         let mnemonic =
             "caught industry sorry science symbol life club sausage kitten tourist shadow transfer";
-        let key = crate::xdag_wallet::bip44::key_from_mnemonic(mnemonic).unwrap();
+        let key = wallet::bip44::key_from_mnemonic(mnemonic).unwrap();
         let from = "Fii9BuhR1KogfNzWbtSH1YJgQQDwFMomK";
         let nonce = get_tranx_nonce(url, from).await.unwrap();
         let to = "Fve2AF8NrEPjNcAj5BABTBeqn7LW7WfeT";

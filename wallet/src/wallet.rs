@@ -1,13 +1,13 @@
 use super::bip44::key_from_mnemonic;
-use crate::crypto::*;
-use crate::error::XwError;
 use anyhow::Result;
 use bcrypt::*;
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
+use crypto::*;
 use directories::ProjectDirs;
 use rand::prelude::*;
 use std::fs::File;
 use std::io::{Cursor, Read, Write};
+use xerror::XwError;
 
 const VERSION: u32 = 4;
 const SALT_LENGTH: usize = 16;
@@ -22,21 +22,26 @@ pub struct XWallet {
     pub private_key: [u8; 32],
     pub public_key: [u8; 33],
     pub mnemonic: String,
-    pub name: String,
+    pub name: Option<String>,
     pub file: String,
     pub hash160: [u8; 20],
     pub address: String,
     pub aes_key: [u8; 24],
 }
-
+impl Default for XWallet {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl XWallet {
     pub fn new() -> Self {
         XWallet {
+            // lock: false,
             password: "".to_string(),
             address: "".to_string(),
             mnemonic: "".to_string(),
             file: "".to_string(),
-            name: "".to_owned(),
+            name: Some("".to_owned()),
             private_key: [0_u8; 32],
             public_key: [0_u8; 33],
             hash160: [0_u8; 20],
@@ -44,14 +49,21 @@ impl XWallet {
             // lock: true,
         }
     }
-    pub fn unlock(&mut self, password: &str, name: &str) -> Result<()> {
+    pub fn unlock(&mut self, password: &str, wallet_name: Option<&str>) -> Result<()> {
         if password.is_empty() {
             return Err(XwError::NoPassword.into());
         }
-        if name.is_empty() {
-            return Err(XwError::NoWalletName.into());
-        }
-        let file_name = gen_file_path(name);
+
+        let file_name = match wallet_name {
+            Some(name) => {
+                if name.is_empty() {
+                    return Err(XwError::NoWalletName.into());
+                }
+                gen_file_path(name)
+            }
+            None => "./xdagj_wallet/xdagj_wallet.bin".to_string(),
+        };
+
         let file_path = std::path::Path::new(&file_name);
         if !file_path.exists() {
             return Err(XwError::WalletNotFound(file_name).into());
@@ -92,7 +104,9 @@ impl XWallet {
         self.address = bs58::encode(&self.hash160).with_check().into_string();
         self.password = password.into();
         self.file = file_name;
-        self.name = name.into();
+        if wallet_name.is_some() {
+            self.name = Some(wallet_name.unwrap().into());
+        }
 
         Ok(())
     }
@@ -188,7 +202,8 @@ impl XWallet {
         if self.password.is_empty() {
             return Err(XwError::NoPassword.into());
         }
-        if self.name.is_empty() {
+        let wlt_name = self.name.clone();
+        if wlt_name.is_some_and(|s| s.is_empty()) {
             return Err(XwError::NoWalletName.into());
         }
 
@@ -198,10 +213,22 @@ impl XWallet {
             return Err(XwError::MnemonicInvalidError.into());
         }
 
-        let file_name = gen_file_path(&self.name);
+        let (file_name, wallet_name) = match self.name.clone() {
+            Some(name) => {
+                if name.is_empty() {
+                    return Err(XwError::NoWalletName.into());
+                }
+                (gen_file_path(&name), name.clone())
+            }
+            None => (
+                "./xdagj_wallet/xdagj_wallet.bin".to_string(),
+                "".to_string(),
+            ),
+        };
+
         let file_path = std::path::Path::new(&file_name).parent().unwrap();
         if file_path.exists() {
-            return Err(XwError::WalletExist(self.name.clone()).into());
+            return Err(XwError::WalletExist(wallet_name).into());
         }
         std::fs::create_dir_all(file_path)?;
 
@@ -239,7 +266,8 @@ impl XWallet {
         if self.password != old {
             return Err(XwError::InputPasswordError.into());
         }
-        if self.name.is_empty() {
+        let wallet_name = self.name.clone();
+        if wallet_name.is_some_and(|s| s.is_empty()) {
             return Err(XwError::NoWalletName.into());
         }
         if new.is_empty() {
@@ -265,6 +293,7 @@ pub fn gen_file_path(name: &str) -> String {
         + "/"
         + DATA_FILE_NAME
 }
+
 // read size of a vector befor read the vector
 fn bytes2size<T: Read>(reader: &mut T) -> Result<u32, XwError> {
     let mut size = 0_u32;
@@ -337,7 +366,7 @@ mod test {
         // wallet.file = "./my_wallet.bin".to_string();
         // wallet.password = "1234567890".to_string();
 
-        let ret = wallet.unlock("123456", "aaa");
+        let ret = wallet.unlock("123456", Some("aaa"));
         println!("{:?}", ret);
         println!("{:?}", wallet);
     }
@@ -354,7 +383,7 @@ mod test {
     #[test]
     fn test_change_pswd() {
         let mut wallet = XWallet::new();
-        let ret = wallet.unlock("111", "aaa");
+        let ret = wallet.unlock("111", Some("aaa"));
         println!("{:?}", ret);
         println!("{:?}", wallet);
 
