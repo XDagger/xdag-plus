@@ -1,4 +1,3 @@
-// use anyhow::Result;
 use clap::Parser;
 use jsonrpsee::{
     core::RpcResult,
@@ -8,8 +7,7 @@ use jsonrpsee::{
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use std::sync::RwLock;
-use tokio::runtime::Runtime;
+use tokio::sync::RwLock;
 use tracing::{event, Level};
 use wallet::XWallet;
 
@@ -80,7 +78,7 @@ pub async fn main() -> anyhow::Result<()> {
             println!("please reenter wallet password :");
             let pswd2 = rpassword::read_password().unwrap();
             if pswd == pswd2 {
-                let mut wallet = GLOBAL_WALLET.write().unwrap();
+                let mut wallet = GLOBAL_WALLET.write().await;
                 wallet.password = pswd;
                 wallet.name = None;
                 wallet.import_from_mnemonic(&mnemonic)?;
@@ -97,7 +95,7 @@ pub async fn main() -> anyhow::Result<()> {
     }
 
     {
-        let mut is_test_net = IS_TEST_NET.write().unwrap();
+        let mut is_test_net = IS_TEST_NET.write().await;
         *is_test_net = cli.test_net;
     }
 
@@ -114,113 +112,123 @@ pub async fn main() -> anyhow::Result<()> {
         .await?;
     let mut module = RpcModule::new(());
 
-    module.register_method::<RpcResult<&str>, _>("Xdag.Unlock", |params, _, _| {
-        match params.one::<String>() {
-            Ok(pswd) => {
-                if pswd.len() < PASSWORD_LENGTH {
-                    return Err(ErrorObject::owned(
-                        -32001,
-                        "wrong password",
-                        Some("too short"),
-                    ));
-                }
+    module.register_async_method::<RpcResult<&str>, _, _>(
+        "Xdag.Unlock",
+        move |params, _, _| async move {
+            match params.one::<String>() {
+                Ok(pswd) => {
+                    if pswd.len() < PASSWORD_LENGTH {
+                        return Err(ErrorObject::owned(
+                            -32001,
+                            "wrong password",
+                            Some("too short"),
+                        ));
+                    }
 
-                let mut wallet = GLOBAL_WALLET.write().unwrap();
-                if wallet.password == pswd {
-                    return Ok("success");
-                } else if !wallet.password.is_empty() {
-                    return Err(ErrorObject::owned(-32001, "wrong password", Some("")));
+                    let mut wallet = GLOBAL_WALLET.write().await;
+                    if wallet.password == pswd {
+                        return Ok("success");
+                    } else if !wallet.password.is_empty() {
+                        return Err(ErrorObject::owned(-32001, "wrong password", Some("")));
+                    }
+                    wallet.name = None;
+                    match wallet.unlock(&pswd, None) {
+                        Ok(()) => Ok("success"),
+                        Err(e) => Err(ErrorObject::owned(
+                            -32001,
+                            "wrong password",
+                            Some(e.root_cause().to_string()),
+                        )),
+                    }
                 }
-                wallet.name = None;
-                match wallet.unlock(&pswd, None) {
-                    Ok(()) => Ok("success"),
-                    Err(e) => Err(ErrorObject::owned(
-                        -32001,
-                        "wrong password",
-                        Some(e.root_cause().to_string()),
-                    )),
-                }
+                Err(e) => Err(e),
             }
-            Err(e) => Err(e),
-        }
-    })?;
+        },
+    )?;
 
-    module.register_method::<RpcResult<&str>, _>("Xdag.Lock", |params, _, _| {
-        match params.one::<String>() {
-            Ok(pswd) => {
-                if pswd.len() < PASSWORD_LENGTH {
-                    return Err(ErrorObject::owned(
-                        -32001,
-                        "wrong password",
-                        Some("too short"),
-                    ));
-                }
+    module.register_async_method::<RpcResult<&str>, _, _>(
+        "Xdag.Lock",
+        move |params, _, _| async move {
+            match params.one::<String>() {
+                Ok(pswd) => {
+                    if pswd.len() < PASSWORD_LENGTH {
+                        return Err(ErrorObject::owned(
+                            -32001,
+                            "wrong password",
+                            Some("too short"),
+                        ));
+                    }
 
-                let mut wallet = GLOBAL_WALLET.write().unwrap();
-                if wallet.password == pswd {
-                    wallet.password = "".to_string();
-                    Ok("success")
-                } else if !wallet.password.is_empty() {
-                    return Err(ErrorObject::owned(-32001, "wrong password", Some("")));
-                } else {
-                    return Err(ErrorObject::owned(
-                        -32002,
-                        "wallet already locked",
-                        Some(""),
-                    ));
+                    let mut wallet = GLOBAL_WALLET.write().await;
+                    if wallet.password == pswd {
+                        wallet.password = "".to_string();
+                        Ok("success")
+                    } else if !wallet.password.is_empty() {
+                        return Err(ErrorObject::owned(-32001, "wrong password", Some("")));
+                    } else {
+                        return Err(ErrorObject::owned(
+                            -32002,
+                            "wallet already locked",
+                            Some(""),
+                        ));
+                    }
                 }
+                Err(e) => Err(e),
             }
-            Err(e) => Err(e),
-        }
-    })?;
+        },
+    )?;
 
-    module.register_method::<RpcResult<String>, _>("Xdag.Account", |_, _, _| {
-        let wallet = GLOBAL_WALLET.read().unwrap();
-        if wallet.password.is_empty() {
-            return Err(ErrorObject::owned(-32003, "wallet locked", Some("")));
-        }
-        Ok(wallet.address.clone())
-    })?;
-
-    module.register_blocking_method::<RpcResult<String>, _>("Xdag.Balance", |params, _, _| {
-        let is_test_net = IS_TEST_NET.read().unwrap();
-        let wallet = GLOBAL_WALLET.read().unwrap();
-        if wallet.password.is_empty() {
-            return Err(ErrorObject::owned(-32003, "wallet locked", Some("")));
-        }
-        let address = match params.one::<String>() {
-            Ok(addr) => {
-                let res = bs58::decode(&addr).with_check(None).into_vec();
-                if res.is_err() {
-                    return Err(ErrorObject::owned(
-                        -32004,
-                        "invalide address characters",
-                        Some(""),
-                    ));
-                }
-
-                addr.clone()
+    module.register_async_method::<RpcResult<String>, _, _>(
+        "Xdag.Account",
+        move |_, _, _| async move {
+            let wallet = GLOBAL_WALLET.read().await;
+            if wallet.password.is_empty() {
+                return Err(ErrorObject::owned(-32003, "wallet locked", Some("")));
             }
-            Err(_) => wallet.address.clone(),
-        };
-        match Runtime::new()
-            .unwrap()
-            .block_on(rpc::get_balance(*is_test_net, &address))
-        {
-            Ok(balance) => Ok(balance),
-            Err(e) => Err(ErrorObject::owned(
-                -32004,
-                "get balance failed",
-                Some(e.to_string()),
-            )),
-        }
-    })?;
+            Ok(wallet.address.clone())
+        },
+    )?;
 
-    module.register_blocking_method::<RpcResult<SendResult>, _>(
+    module.register_async_method::<RpcResult<String>, _, _>(
+        "Xdag.Balance",
+        move |params, _, _| async move {
+            let is_test_net = IS_TEST_NET.read().await;
+            let wallet = GLOBAL_WALLET.read().await;
+            if wallet.password.is_empty() {
+                return Err(ErrorObject::owned(-32003, "wallet locked", Some("")));
+            }
+            let address = match params.one::<String>() {
+                Ok(addr) => {
+                    let res = bs58::decode(&addr).with_check(None).into_vec();
+                    if res.is_err() {
+                        return Err(ErrorObject::owned(
+                            -32004,
+                            "invalide address characters",
+                            Some(""),
+                        ));
+                    }
+                    addr.clone()
+                }
+                Err(_) => wallet.address.clone(),
+            };
+
+            let res = rpc::get_balance(*is_test_net, &address).await;
+            match res {
+                Ok(balance) => Ok(balance),
+                Err(e) => Err(ErrorObject::owned(
+                    -32004,
+                    "get balance failed",
+                    Some(e.to_string()),
+                )),
+            }
+        },
+    )?;
+
+    module.register_async_method::<RpcResult<SendResult>, _, _>(
         "Xdag.Transfer",
-        |params, _, _| {
-            let is_test_net = IS_TEST_NET.read().unwrap();
-            let wallet = GLOBAL_WALLET.read().unwrap();
+        move |params, _, _| async move {
+            let is_test_net = IS_TEST_NET.read().await;
+            let wallet = GLOBAL_WALLET.read().await;
             if wallet.password.is_empty() {
                 return Err(ErrorObject::owned(-32003, "wallet locked", Some("")));
             }
@@ -249,14 +257,15 @@ pub async fn main() -> anyhow::Result<()> {
                             Some(""),
                         ));
                     }
-                    let res = Runtime::new().unwrap().block_on(rpc::send_xdag(
+                    let res = rpc::send_xdag(
                         *is_test_net,
                         &wallet.mnemonic,
                         &wallet.address,
                         &request.address,
                         amount,
                         &request.remark,
-                    ));
+                    )
+                    .await;
 
                     if let Err(e) = res {
                         return Err(ErrorObject::owned(
