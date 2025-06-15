@@ -199,15 +199,19 @@ pub async fn main() -> anyhow::Result<()> {
             }
             let address = match params.one::<String>() {
                 Ok(addr) => {
-                    let res = bs58::decode(&addr).with_check(None).into_vec();
-                    if res.is_err() {
-                        return Err(ErrorObject::owned(
-                            -32004,
-                            "invalide address characters",
-                            Some(""),
-                        ));
+                    if !addr.is_empty() {
+                        let res = bs58::decode(&addr).with_check(None).into_vec();
+                        if res.is_err() {
+                            return Err(ErrorObject::owned(
+                                -32004,
+                                "invalide address characters",
+                                Some(""),
+                            ));
+                        }
+                        addr.clone()
+                    } else {
+                        wallet.address.clone()
                     }
-                    addr.clone()
                 }
                 Err(_) => wallet.address.clone(),
             };
