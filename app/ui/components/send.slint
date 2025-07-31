@@ -2,7 +2,7 @@ import {ROOT_GLOBAL, WalletAccounts, UiWallets, TranxItem,TranxType} from "../gl
 import { XButton } from "../modules/surrealism-ui/x_index.slint";
 import { SText } from "../modules/surrealism-ui/index.slint";
 import {I18n, Language} from "../i18n.slint";
-import { Button } from "std-widgets.slint";
+import { Button, CheckBox, SpinBox } from "std-widgets.slint";
 
 
 export component SendWin inherits Rectangle {
@@ -13,19 +13,20 @@ export component SendWin inherits Rectangle {
     in-out property <string> amount-n: "- " + amount-p;
     in-out property <string> remark;
     in-out property <string> lang-name;
+    property <bool> enable-fee: false;
+    property <int> fee-value: 0;
     i18n := I18n {
         lang <=> lang-name;
     }
 
     callback close();
     callback send-action();
-    width: 100%;
-    height: 100%;
+
     background: ROOT-GLOBAL.bgColorMask-transparent;
     Rectangle {
         z: 111;
         width: root.width * 75%;
-        height: root.height * 70%;
+        height: root.height * 75%;
         background: ROOT-GLOBAL.bgColor;
         border-color: ROOT-GLOBAL.borderColor;
         border-width: 1px;
@@ -231,6 +232,91 @@ export component SendWin inherits Rectangle {
                         }
                     }
                 }
+                Rectangle {
+                  border-width: 1px;
+                  background: ROOT_GLOBAL.blockColor;
+                  border-radius: 8px;
+                  HorizontalLayout {
+                    visible: !WalletAccounts.sent;
+                    padding: 4px;
+                    check:= CheckBox {
+
+                      min-width: 24px;
+                      text: "";
+                      checked: enable-fee;
+                      changed checked => {
+                        enable-fee = check.checked;
+                        if !check.checked {
+                          fee.value = 0;
+                          fee-value = 0;
+                        }
+                      }
+                    }
+                    Rectangle {
+                      SText {
+                          min-width: 100px;
+                          text: "Extra Fee";
+                          font-size: 16px;
+                      }
+                      TouchArea {
+                        clicked => {
+                          if check.checked {
+                            check.checked = false;
+                          }else{
+                            check.checked = true;
+                          }
+                          enable-fee = check.checked;
+                        }
+                      }
+                    }
+
+                    fee := SpinBox {
+                      max-width: 160px;
+                      value: 0;
+                      step-size: 1;
+                      enabled: enable-fee;
+                      edited(value) => {
+                        fee-value = value;
+                      }
+                    }
+                    Rectangle {}
+                    SText {
+                      horizontal-alignment: right;
+                      min-width: 100px;
+                      text: "Accelerate to  :  ";
+                      font-size: 16px;
+                      font-weight: 600;
+                      color: enable-fee? Colors.whitesmoke:ROOT_GLOBAL.blockColor;
+                    }
+                    SText {
+                      horizontal-alignment: right;
+                      text: "--- S";
+                      font-size: 16px;
+                      font-weight: 600;
+                      color: enable-fee? Colors.whitesmoke:ROOT_GLOBAL.blockColor;
+                    }
+                  }
+                  HorizontalLayout {
+                    visible: WalletAccounts.sent;
+                    padding: 8px;
+                    SText {
+                        min-width: 100px;
+                        text: "Extra Fee";
+                        font-size: 16px;
+                    }
+
+                    Rectangle { }
+
+                    SText {
+                        horizontal-alignment: right;
+                        min-width: 100px;
+                        text: WalletAccounts.extra-fee+".00 XDAG";
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: Colors.whitesmoke;
+                    }
+                  }
+                }
             }
             if !WalletAccounts.sending:HorizontalLayout {
                 padding-top: 15px;
@@ -245,6 +331,7 @@ export component SendWin inherits Rectangle {
                             WalletAccounts.open-in-browser(WalletAccounts.is-test,WalletAccounts.current-block-info.address);
                         } else {
                             if remark.character-count <= 32 && receiver != sender && !receiver.is-empty {
+                                WalletAccounts.extra-fee = fee-value;
                                 send-action();
                             }
                         }

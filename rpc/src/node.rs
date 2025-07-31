@@ -65,6 +65,7 @@ fn transaction_block(
     remark: &str,
     key: &bip32::XPrv,
     nonce: u64,
+    extra_fee: f64,
 ) -> Result<String, XwError> {
     if amount < FEE {
         return Err(XwError::LessThanFeeError);
@@ -87,14 +88,14 @@ fn transaction_block(
     // header: timestamp
     let t = get_timestamp();
     writer.write_u64::<LittleEndian>(t)?;
-
-    // if is_test_net {
-    // header: fee, nonce
-    writer.seek(SeekFrom::Current(32)).unwrap();
+    if extra_fee > 0.0_f64 {
+        let fee = amount_to_xdag(extra_fee);
+        writer.write_u64::<LittleEndian>(fee)?;
+        writer.seek(SeekFrom::Current(24)).unwrap();
+    }else {
+        writer.seek(SeekFrom::Current(32)).unwrap();
+    }
     writer.write_u64::<LittleEndian>(nonce)?;
-    // } else {
-    //     writer.seek(SeekFrom::Current(8)).unwrap();
-    // }
 
     // input field: input address
     writer.write_u32::<LittleEndian>(0)?;
@@ -208,11 +209,12 @@ pub async fn send_xdag(
     to: &str,
     amount: f64,
     remark: &str,
+    extra_fee: f64,
 ) -> Result<String, XwError> {
     let url = if is_test_net { TEST_NODE } else { NODE_RPC };
     let nonce = get_tranx_nonce(url, from).await?;
     let key = bip44::key_from_mnemonic(mnemonic)?;
-    let block = transaction_block(is_test_net, amount, from, to, remark, &key, nonce)?;
+    let block = transaction_block(is_test_net, amount, from, to, remark, &key, nonce,extra_fee)?;
     let res = send_transaction(url, &block).await?;
     if address_to_hash(&res).is_err() {
         return Err(XwError::RpcError(res));
@@ -379,7 +381,7 @@ mod test {
         if let Ok(key) = wallet::bip44::key_from_mnemonic(mnemonic) {
             let from = "Fii9BuhR1KogfNzWbtSH1YJgQQDwFMomK";
             let to = "Fve2AF8NrEPjNcAj5BABTBeqn7LW7WfeT";
-            let block = transaction_block(true, 1.5, from, to, "hello", &key, 111);
+            let block = transaction_block(true, 1.5, from, to, "hello", &key, 111,0.0_f64);
             match block {
                 Ok(s) => println!("{}", s),
                 Err(e) => println!("{}", e),
@@ -397,7 +399,7 @@ mod test {
         let from = "Fii9BuhR1KogfNzWbtSH1YJgQQDwFMomK";
         let nonce = get_tranx_nonce(url, from).await.unwrap();
         let to = "Fve2AF8NrEPjNcAj5BABTBeqn7LW7WfeT";
-        let block = transaction_block(true, 1.0, from, to, "hello", &key, nonce).unwrap();
+        let block = transaction_block(true, 1.0, from, to, "hello", &key, nonce, 0.0_f64).unwrap();
         println!("{}", block);
         let res = send_transaction(url, &block).await;
         match res {

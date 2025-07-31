@@ -268,13 +268,13 @@ pub async fn main() -> Result<()> {
     {
         let ui_handle = ui.as_weak();
         ui.global::<WalletAccounts>().on_send_xdag(
-            move |is_test, mnemonic, from, to, amount, remark| {
+            move |is_test, mnemonic, from, to, amount, remark, extra_free| {
                 let amount = amount.parse::<f64>().unwrap_or(0.0);
                 let ui = ui_handle.upgrade().unwrap();
                 let ui_weak = ui.as_weak();
                 thread::spawn(move || {
                     let res = tokio::runtime::Runtime::new().unwrap().block_on(async {
-                        transfer_xdag(is_test, &mnemonic, &from, &to, amount, &remark).await
+                        transfer_xdag(is_test, &mnemonic, &from, &to, amount, &remark, extra_free as f64).await
                     });
 
                     // let ui = ui_handle.upgrade().unwrap();
@@ -823,8 +823,9 @@ async fn transfer_xdag(
     to: &str,
     amount: f64,
     remark: &str,
+    extra_fee: f64,
 ) -> Result<TranxBlock> {
-    let hash = send_xdag(is_test_net, mnemonic, from, to, amount, remark).await?;
+    let hash = send_xdag(is_test_net, mnemonic, from, to, amount, remark, extra_fee).await?;
     let uri = if is_test_net {
         TEST_EXPLORER
     } else {

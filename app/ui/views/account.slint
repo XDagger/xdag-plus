@@ -2,7 +2,7 @@ import { SText, SDivider } from "../modules/surrealism-ui/index.slint";
 import { XButton } from "../modules/surrealism-ui/x_index.slint";
 import { HorizontalBox, Button,LineEdit, TextEdit,VerticalBox,ScrollView } from "std-widgets.slint";
 import {I18n, Language} from "../i18n.slint";
-import {UiWallets,TranxItem,TranxDay,TranxType,FavoriteAddr,ROOT-GLOBAL, WalletAccounts} from "../global.slint";
+import {UiWallets,TranxItem,TranxDay,TranxType,FavoriteAddr,ROOT-GLOBAL, WalletAccounts, ROOT-GLOBAL} from "../global.slint";
 import {CreateWallet,ImportWallet, Contacts,Qrcode,MnemonicWin,Transaction, SecurityWin,About,
     XlineEdit,LanguageWin,NetworkWin,SendWin,DelContact,DelWallet,ErrorWin, RenameWallet} from "../components/index.slint";
 import { PasswordView } from "./password.slint";
@@ -1434,6 +1434,8 @@ export component AccountsView inherits Rectangle {
         }
     }
     if show-send-win: SendWin {
+        width: 100%;
+        height: 100%;
         lang-name: Language.name;
         receiver: toAddress.text;
         sender: walletAddress.text;
@@ -1491,7 +1493,7 @@ export component AccountsView inherits Rectangle {
         running: false;
         triggered => {
             WalletAccounts.send-xdag(WalletAccounts.is-test,UiWallets.ui-wallets[active-index].mnemonic,
-                walletAddress.text,toAddress.text, Amount.text, Remark.text);
+                walletAddress.text,toAddress.text, Amount.text, Remark.text, WalletAccounts.extra-fee);
             self.running = false;
         }
     }
