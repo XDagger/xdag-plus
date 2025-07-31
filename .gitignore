@@ -1,6 +1,7 @@
 target/
 .vscode
 .idea
+.zed
 packages/
 *.log
 .DS_Store
