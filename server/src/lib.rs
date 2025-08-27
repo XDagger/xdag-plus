@@ -42,6 +42,12 @@ struct SendRequest {
     address: String,
     #[serde(default)]
     remark: String,
+    #[serde(default = "default_fee")]
+    express_fee: String,
+}
+
+fn default_fee() -> String {
+    "0.0".to_string()
 }
 
 #[derive(Serialize, Clone)]
@@ -244,7 +250,7 @@ pub async fn main() -> anyhow::Result<()> {
                     }
 
                     let amount = request.amount.parse::<f64>().unwrap_or(0.0);
-                    if amount == 0.0 {
+                    if amount <= 0.0 {
                         return Err(ErrorObject::owned(
                             -32005,
                             "invalide transfer amount",
@@ -261,6 +267,22 @@ pub async fn main() -> anyhow::Result<()> {
                             Some(""),
                         ));
                     }
+                    if request.express_fee.parse::<f64>().is_err() {
+                        return Err(ErrorObject::owned(
+                            -32005,
+                            "invalide transfer express fee",
+                            Some(""),
+                        ));
+                    }
+                    let express_fee = request.express_fee.parse::<f64>().unwrap();
+                    if express_fee < 0.0 {
+                        return Err(ErrorObject::owned(
+                            -32005,
+                            "invalide transfer express fee",
+                            Some(""),
+                        ));
+                    }
+
                     let res = rpc::send_xdag(
                         *is_test_net,
                         &wallet.mnemonic,
@@ -268,6 +290,7 @@ pub async fn main() -> anyhow::Result<()> {
                         &request.address,
                         amount,
                         &request.remark,
+                        express_fee,
                     )
                     .await;
 

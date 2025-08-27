@@ -65,7 +65,7 @@ fn transaction_block(
     remark: &str,
     key: &bip32::XPrv,
     nonce: u64,
-    extra_fee: f64,
+    express_fee: f64,
 ) -> Result<String, XwError> {
     if amount < FEE {
         return Err(XwError::LessThanFeeError);
@@ -88,8 +88,8 @@ fn transaction_block(
     // header: timestamp
     let t = get_timestamp();
     writer.write_u64::<LittleEndian>(t)?;
-    if extra_fee > 0.0_f64 {
-        let fee = amount_to_xdag(extra_fee);
+    if express_fee > 0.0_f64 {
+        let fee = amount_to_xdag(express_fee);
         writer.write_u64::<LittleEndian>(fee)?;
         writer.seek(SeekFrom::Current(24)).unwrap();
     }else {
@@ -209,12 +209,12 @@ pub async fn send_xdag(
     to: &str,
     amount: f64,
     remark: &str,
-    extra_fee: f64,
+    express_fee: f64,
 ) -> Result<String, XwError> {
     let url = if is_test_net { TEST_NODE } else { NODE_RPC };
     let nonce = get_tranx_nonce(url, from).await?;
     let key = bip44::key_from_mnemonic(mnemonic)?;
-    let block = transaction_block(is_test_net, amount, from, to, remark, &key, nonce,extra_fee)?;
+    let block = transaction_block(is_test_net, amount, from, to, remark, &key, nonce,express_fee)?;
     let res = send_transaction(url, &block).await?;
     if address_to_hash(&res).is_err() {
         return Err(XwError::RpcError(res));

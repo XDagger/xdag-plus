@@ -202,7 +202,7 @@ impl XWallet {
         if self.password.is_empty() {
             return Err(XwError::NoPassword.into());
         }
-        let wlt_name = self.name.clone();
+        let wlt_name = self.name.as_ref();
         if wlt_name.is_some_and(|s| s.is_empty()) {
             return Err(XwError::NoWalletName.into());
         }
@@ -213,7 +213,7 @@ impl XWallet {
             return Err(XwError::MnemonicInvalidError.into());
         }
 
-        let (file_name, wallet_name) = match self.name.clone() {
+        let (file_name, wallet_name) = match self.name.as_ref() {
             Some(name) => {
                 if name.is_empty() {
                     return Err(XwError::NoWalletName.into());
