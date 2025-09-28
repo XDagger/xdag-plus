@@ -99,7 +99,7 @@ fn transaction_block(
     let t = get_timestamp();
     writer.write_u64::<LittleEndian>(t)?;
     if express_fee > 0.0_f64 {
-        let fee = amount_to_xdag(express_fee);
+        let fee = (express_fee * 1000000000.0_f64) as u64;
         writer.write_u64::<LittleEndian>(fee)?;
         writer.seek(SeekFrom::Current(24)).unwrap();
     } else {
@@ -462,5 +462,12 @@ mod test {
         let hash = address_to_hash(addr).unwrap();
         assert_eq!(hash[..24], [0u8; 24]);
         assert_eq!(hash[24..], [0u8; 8]);
+    }
+
+    #[test]
+    fn test_fee_2_bytes() {
+        let fee: f64 = 0.2;
+        let int_fee = (fee * 1000000000.0_f64) as u64;
+        println!("{int_fee:016x}"); // 000000000bebc200
     }
 }
