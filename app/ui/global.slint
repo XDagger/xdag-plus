@@ -238,10 +238,13 @@ export global WalletAccounts {
     in-out property <string> err-message;
     in-out property <TranxItem> current-tx-item;
     in-out property <image> qrcode;
-    in-out property <int> extra-fee;
+    in-out property <int> express-fee;
+    in-out property <string> average-express-fee;
+
     callback fetch-history(is-test: bool, address: string);
     // callback character-count(text: string) -> string;
-    callback send-xdag(is-test: bool, mnemonic: string, from: string, to: string, amount: string, remark: string, extra-fee: int);
+    callback send-xdag(is-test: bool, mnemonic: string, from: string, to: string, amount: string, remark: string, express-fee: int);
+    callback fetch_average_express(is-test: bool);
     callback create-wallet(name: string, password: string, mnemonic: string); // mnemonic is empty when creating a new wallet, otherwise import a wallet
   callback set-config();
     callback add-contact(name: string, address: string);

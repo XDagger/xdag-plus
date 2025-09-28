@@ -283,14 +283,14 @@ export component SendWin inherits Rectangle {
                     SText {
                       horizontal-alignment: right;
                       min-width: 100px;
-                      text: "Accelerate to  :  ";
+                      text: "Average Express Fee  :  ";
                       font-size: 16px;
                       font-weight: 600;
                       color: enable-fee? Colors.whitesmoke:ROOT_GLOBAL.blockColor;
                     }
                     SText {
                       horizontal-alignment: right;
-                      text: "--- S";
+                      text: WalletAccounts.average-express-fee;
                       font-size: 16px;
                       font-weight: 600;
                       color: enable-fee? Colors.whitesmoke:ROOT_GLOBAL.blockColor;
@@ -310,7 +310,7 @@ export component SendWin inherits Rectangle {
                     SText {
                         horizontal-alignment: right;
                         min-width: 100px;
-                        text: WalletAccounts.extra-fee+".00 XDAG";
+                        text: WalletAccounts.express-fee+".00 XDAG";
                         font-size: 16px;
                         font-weight: 600;
                         color: Colors.whitesmoke;
@@ -331,7 +331,7 @@ export component SendWin inherits Rectangle {
                             WalletAccounts.open-in-browser(WalletAccounts.is-test,WalletAccounts.current-block-info.address);
                         } else {
                             if remark.character-count <= 32 && receiver != sender && !receiver.is-empty {
-                                WalletAccounts.extra-fee = fee-value;
+                                WalletAccounts.express-fee = fee-value;
                                 send-action();
                             }
                         }

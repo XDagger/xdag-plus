@@ -60,6 +60,8 @@ pub async fn main() -> Result<()> {
     ui.global::<Language>()
         .set_name(conf.language.clone().into());
     ui.global::<WalletAccounts>().set_is_test(conf.istest);
+    ui.global::<WalletAccounts>()
+        .set_average_express_fee("0.00".into());
     let favorite_vec: Vec<_> = conf
         .favorite
         .iter()
@@ -274,7 +276,16 @@ pub async fn main() -> Result<()> {
                 let ui_weak = ui.as_weak();
                 thread::spawn(move || {
                     let res = tokio::runtime::Runtime::new().unwrap().block_on(async {
-                        transfer_xdag(is_test, &mnemonic, &from, &to, amount, &remark, extra_free as f64).await
+                        transfer_xdag(
+                            is_test,
+                            &mnemonic,
+                            &from,
+                            &to,
+                            amount,
+                            &remark,
+                            extra_free as f64,
+                        )
+                        .await
                     });
 
                     // let ui = ui_handle.upgrade().unwrap();
@@ -312,6 +323,36 @@ pub async fn main() -> Result<()> {
                 });
             },
         );
+    }
+
+    {
+        let ui_handle = ui.as_weak();
+        ui.global::<WalletAccounts>()
+            .on_fetch_average_express(move |is_test| {
+                let ui = ui_handle.upgrade().unwrap();
+                let ui_weak = ui.as_weak();
+                thread::spawn(move || {
+                    let res = tokio::runtime::Runtime::new()
+                        .unwrap()
+                        .block_on(async { get_average_express_fee(is_test).await });
+                    if let Err(e) = res {
+                        event!(Level::ERROR, "get_average_express_fee error: {:?}", e);
+                    } else {
+                        let average = res.unwrap();
+                        if let Err(_) = average.parse::<f64>() {
+                            event!(Level::ERROR, "parse average express fee error");
+                        } else {
+                            ui_weak
+                                .upgrade_in_event_loop(move |handle| {
+                                    handle
+                                        .global::<WalletAccounts>()
+                                        .set_average_express_fee(average.into());
+                                })
+                                .unwrap();
+                        }
+                    }
+                });
+            });
     }
 
     {

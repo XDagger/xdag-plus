@@ -46,6 +46,16 @@ pub async fn get_balance(is_test_net: bool, address: &str) -> Result<String, XwE
     Ok(res)
 }
 
+pub async fn get_average_express_fee(is_test_net: bool) -> Result<String, XwError> {
+    let uri = if is_test_net { TEST_NODE } else { NODE_RPC };
+    let client = HttpClientBuilder::default()
+        .request_timeout(Duration::from_secs(18))
+        .build(uri)?;
+    let res: String = client.request("xdag_getAverageFee", rpc_params![]).await?;
+
+    Ok(res)
+}
+
 pub async fn send_transaction(uri: &str, block: &str) -> Result<String, XwError> {
     let client = HttpClientBuilder::default()
         .request_timeout(Duration::from_secs(18))
@@ -92,7 +102,7 @@ fn transaction_block(
         let fee = amount_to_xdag(express_fee);
         writer.write_u64::<LittleEndian>(fee)?;
         writer.seek(SeekFrom::Current(24)).unwrap();
-    }else {
+    } else {
         writer.seek(SeekFrom::Current(32)).unwrap();
     }
     writer.write_u64::<LittleEndian>(nonce)?;
@@ -214,7 +224,16 @@ pub async fn send_xdag(
     let url = if is_test_net { TEST_NODE } else { NODE_RPC };
     let nonce = get_tranx_nonce(url, from).await?;
     let key = bip44::key_from_mnemonic(mnemonic)?;
-    let block = transaction_block(is_test_net, amount, from, to, remark, &key, nonce,express_fee)?;
+    let block = transaction_block(
+        is_test_net,
+        amount,
+        from,
+        to,
+        remark,
+        &key,
+        nonce,
+        express_fee,
+    )?;
     let res = send_transaction(url, &block).await?;
     if address_to_hash(&res).is_err() {
         return Err(XwError::RpcError(res));
@@ -381,7 +400,7 @@ mod test {
         if let Ok(key) = wallet::bip44::key_from_mnemonic(mnemonic) {
             let from = "Fii9BuhR1KogfNzWbtSH1YJgQQDwFMomK";
             let to = "Fve2AF8NrEPjNcAj5BABTBeqn7LW7WfeT";
-            let block = transaction_block(true, 1.5, from, to, "hello", &key, 111,0.0_f64);
+            let block = transaction_block(true, 1.5, from, to, "hello", &key, 111, 0.0_f64);
             match block {
                 Ok(s) => println!("{}", s),
                 Err(e) => println!("{}", e),
@@ -406,6 +425,12 @@ mod test {
             Ok(s) => println!("{}", s),
             Err(e) => println!("{}", e),
         }
+    }
+
+    #[tokio::test]
+    async fn test_get_average_fee() {
+        let res = get_average_express_fee(true).await;
+        println!("{:?}", res);
     }
 
     #[test]

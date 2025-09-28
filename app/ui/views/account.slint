@@ -40,6 +40,7 @@ export component AccountsView inherits Rectangle {
         WalletAccounts.current-password = UiWallets.ui-wallets[0].password;
         WalletAccounts.current-balance = "0.00";
         WalletAccounts.fetch-history(WalletAccounts.is-test, UiWallets.ui-wallets[0].address);
+        WalletAccounts.fetch_average_express(WalletAccounts.is-test);
     }
     account-view := Rectangle {
         y: header-bar.height;
@@ -1493,7 +1494,7 @@ export component AccountsView inherits Rectangle {
         running: false;
         triggered => {
             WalletAccounts.send-xdag(WalletAccounts.is-test,UiWallets.ui-wallets[active-index].mnemonic,
-                walletAddress.text,toAddress.text, Amount.text, Remark.text, WalletAccounts.extra-fee);
+                walletAddress.text,toAddress.text, Amount.text, Remark.text, WalletAccounts.express-fee);
             self.running = false;
         }
     }
@@ -1568,6 +1569,14 @@ export component AccountsView inherits Rectangle {
     about-slint := About {
         visible: false;
     }
+
+    fetch-average-timer := Timer {
+            interval: 64s;
+            running: true;
+            triggered() => {
+                WalletAccounts.fetch_average_express(WalletAccounts.is-test);
+            }
+        }
 
     clipboard := LineEdit {
         visible: false;
