@@ -14,7 +14,8 @@ export component SendWin inherits Rectangle {
     in-out property <string> remark;
     in-out property <string> lang-name;
     property <bool> enable-fee: false;
-    property <int> fee-value: 0;
+    property <float> fee-value: 0.0;
+    property <int> fee-int: 0;
     i18n := I18n {
         lang <=> lang-name;
     }
@@ -249,12 +250,13 @@ export component SendWin inherits Rectangle {
                         if !check.checked {
                           fee.value = 0;
                           fee-value = 0;
+                          fee-int = 0;
                         }
                       }
                     }
                     Rectangle {
                       SText {
-                          min-width: 200px;
+                          min-width: 190px;
                           text: "Express Fee: "+ fee-value + " XDAG";
                           font-size: 16px;
                       }
@@ -282,15 +284,17 @@ export component SendWin inherits Rectangle {
                     //   }
                     // }
                     fee := Slider {
-                      min-width: 200px;
-                      max-width: 200px;
+                      min-width: 250px;
+                      max-width: 250px;
                       minimum: 0;
-                      maximum: 100;
+                      maximum: 1000;
                       value: 0;
                       step: 1;
                       enabled: enable-fee;
                       changed(value) => {
-                        fee-value = value;
+                        fee-int = value;
+                        fee-value = fee-int ;
+                        fee-value = fee-value/10
                       }
                     }
                     Rectangle {}
@@ -324,7 +328,7 @@ export component SendWin inherits Rectangle {
                     SText {
                         horizontal-alignment: right;
                         min-width: 100px;
-                        text: WalletAccounts.express-fee+".00 XDAG";
+                        text: WalletAccounts.express-fee+"0 XDAG";
                         font-size: 16px;
                         font-weight: 600;
                         color: Colors.whitesmoke;
