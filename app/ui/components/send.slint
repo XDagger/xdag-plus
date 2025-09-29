@@ -2,7 +2,7 @@ import {ROOT_GLOBAL, WalletAccounts, UiWallets, TranxItem,TranxType} from "../gl
 import { XButton } from "../modules/surrealism-ui/x_index.slint";
 import { SText } from "../modules/surrealism-ui/index.slint";
 import {I18n, Language} from "../i18n.slint";
-import { Button, CheckBox, SpinBox } from "std-widgets.slint";
+import { Button, CheckBox, SpinBox, Slider } from "std-widgets.slint";
 
 
 export component SendWin inherits Rectangle {
@@ -200,7 +200,7 @@ export component SendWin inherits Rectangle {
                         SText {
                             horizontal-alignment: right;
                             min-width: 100px;
-                            text: "0.00 XDAG";
+                            text: "0.10 XDAG";
                             font-size: 16px;
                             font-weight: 600;
                             color: Colors.whitesmoke;
@@ -254,8 +254,8 @@ export component SendWin inherits Rectangle {
                     }
                     Rectangle {
                       SText {
-                          min-width: 100px;
-                          text: "Express Fee";
+                          min-width: 200px;
+                          text: "Express Fee: "+ fee-value + " XDAG";
                           font-size: 16px;
                       }
                       TouchArea {
@@ -270,12 +270,26 @@ export component SendWin inherits Rectangle {
                       }
                     }
 
-                    fee := SpinBox {
-                      max-width: 160px;
+                    // fee := SpinBox {
+                    //   max-width: 160px;
+                    //   minimum: 0;
+                    //   maximum: 1000;
+                    //   value: 0;
+                    //   step-size: 1;
+                    //   enabled: enable-fee;
+                    //   edited(value) => {
+                    //     fee-value = value;
+                    //   }
+                    // }
+                    fee := Slider {
+                      min-width: 200px;
+                      max-width: 200px;
+                      minimum: 0;
+                      maximum: 100;
                       value: 0;
-                      step-size: 1;
+                      step: 1;
                       enabled: enable-fee;
-                      edited(value) => {
+                      changed(value) => {
                         fee-value = value;
                       }
                     }
