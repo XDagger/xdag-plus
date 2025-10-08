@@ -328,7 +328,7 @@ export component SendWin inherits Rectangle {
                     SText {
                         horizontal-alignment: right;
                         min-width: 100px;
-                        text: WalletAccounts.express-fee+"0 XDAG";
+                        text: WalletAccounts.express-fee.to-fixed(2)+" XDAG";
                         font-size: 16px;
                         font-weight: 600;
                         color: Colors.whitesmoke;
