@@ -135,7 +135,7 @@ fn transaction_block(
     writer.write_all(&key.public_key().to_bytes()[1..33])?;
 
     // sign field: sign_r
-    let signature = sign_transaction(writer.clone().into_inner().as_slice(), key);
+    let signature = sign_transaction(writer.get_ref().as_slice(), key);
     let r = signature.r();
     writer.write_all(&r.to_bytes())?;
 

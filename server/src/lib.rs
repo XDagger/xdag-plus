@@ -204,22 +204,18 @@ pub async fn main() -> anyhow::Result<()> {
                 return Err(ErrorObject::owned(-32003, "wallet locked", Some("")));
             }
             let address = match params.one::<String>() {
-                Ok(addr) => {
-                    if !addr.is_empty() {
-                        let res = bs58::decode(&addr).with_check(None).into_vec();
-                        if res.is_err() {
-                            return Err(ErrorObject::owned(
-                                -32004,
-                                "invalide address characters",
-                                Some(""),
-                            ));
-                        }
-                        addr.clone()
-                    } else {
-                        wallet.address.clone()
+                Ok(addr) if !addr.is_empty() => {
+                    let res = bs58::decode(&addr).with_check(None).into_vec();
+                    if res.is_err() {
+                        return Err(ErrorObject::owned(
+                            -32004,
+                            "invalide address characters",
+                            Some(""),
+                        ));
                     }
+                    addr
                 }
-                Err(_) => wallet.address.clone(),
+                _ => wallet.address.clone(),
             };
 
             let res = rpc::get_balance(*is_test_net, &address).await;

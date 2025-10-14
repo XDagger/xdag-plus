@@ -418,7 +418,7 @@ pub async fn main() -> Result<()> {
                         event!(
                             Level::INFO,
                             "open wallet success...{:?}",
-                            wallets.iter().map(|w| w.name.clone()).collect::<Vec<_>>()
+                            wallets.iter().map(|w| w.name.as_str()).collect::<Vec<_>>()
                         );
                         if let Some(wallet_list) = wallets_weak.upgrade() {
                             // for wlt in wallets {
@@ -463,7 +463,7 @@ pub async fn main() -> Result<()> {
                 thread::spawn(move || {
                     match tokio::runtime::Runtime::new()
                         .unwrap()
-                        .block_on(async { fetch_balance(net_type, address.clone().into()).await })
+                        .block_on(async { fetch_balance(net_type, address.as_str()).await })
                     {
                         Ok(block) => {
                             ui_weak
@@ -492,7 +492,7 @@ pub async fn main() -> Result<()> {
                         Err(e) => {
                             error!(
                                 "fetch wallet balance failed, {}, {}",
-                                address.clone(),
+                                address.as_str(),
                                 e.root_cause().to_string()
                             );
                             ui_weak
@@ -528,7 +528,7 @@ pub async fn main() -> Result<()> {
                 thread::spawn(move || {
                     match tokio::runtime::Runtime::new()
                         .unwrap()
-                        .block_on(async { fetch_tranx(net_type, address.clone().into()).await })
+                        .block_on(async { fetch_tranx(net_type, address.as_str()).await })
                     {
                         Ok(block) => {
                             ui_weak
@@ -566,7 +566,7 @@ pub async fn main() -> Result<()> {
                         Err(e) => {
                             error!(
                                 "fetch transaction block failed, {}, {}",
-                                address.clone(),
+                                address.as_str(),
                                 e.root_cause().to_string()
                             );
                             ui_weak
@@ -741,21 +741,21 @@ pub fn new_wallet(name: String, pswd: String, mnemonic: Option<String>) -> Resul
 //     Ok(balance)
 // }
 
-async fn fetch_balance(node: NodeType, address: String) -> Result<WalletBlock> {
+async fn fetch_balance(node: NodeType, address: &str) -> Result<WalletBlock> {
     let uri = match node {
         NodeType::Mainnet => EXPLORER_URL,
         NodeType::Testnet => TEST_EXPLORER,
     };
-    let block = get_history::<WalletBlock>(uri, &address, 1).await?;
+    let block = get_history::<WalletBlock>(uri, address, 1).await?;
     Ok(block)
 }
 
-async fn fetch_tranx(node: NodeType, address: String) -> Result<TranxBlock> {
+async fn fetch_tranx(node: NodeType, address: &str) -> Result<TranxBlock> {
     let uri = match node {
         NodeType::Mainnet => EXPLORER_URL,
         NodeType::Testnet => TEST_EXPLORER,
     };
-    let block = get_history::<TranxBlock>(uri, &address, 1).await?;
+    let block = get_history::<TranxBlock>(uri, address, 1).await?;
     // event!(Level::INFO, "tranx block {:?}", block);
     Ok(block)
 }

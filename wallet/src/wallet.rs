@@ -182,8 +182,8 @@ impl XWallet {
         writer.write_all(&sized_bytes(&iv))?;
 
         let mut seed_writer = Cursor::new(Vec::new());
-        let mnemonic = self.mnemonic.clone();
-        seed_writer.write_all(&sized_bytes(&mnemonic.into_bytes()))?;
+
+        seed_writer.write_all(&sized_bytes(self.mnemonic.as_bytes()))?;
 
         let next_index = 1_u32;
         seed_writer.write_u32::<BigEndian>(next_index)?;
@@ -266,8 +266,8 @@ impl XWallet {
         if self.password != old {
             return Err(XwError::InputPasswordError.into());
         }
-        let wallet_name = self.name.clone();
-        if wallet_name.is_some_and(|s| s.is_empty()) {
+
+        if self.name.as_ref().is_some_and(|s| s.is_empty()) {
             return Err(XwError::NoWalletName.into());
         }
         if new.is_empty() {
