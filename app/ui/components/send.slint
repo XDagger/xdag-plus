@@ -256,8 +256,8 @@ export component SendWin inherits Rectangle {
                     }
                     Rectangle {
                       SText {
-                          min-width: 190px;
-                          text: "Express Fee: "+ fee-value + " XDAG";
+                          min-width: 210px;
+                          text: i18n.express_fee+": "+ fee-value + " XDAG";
                           font-size: 16px;
                       }
                       TouchArea {
@@ -301,7 +301,7 @@ export component SendWin inherits Rectangle {
                     SText {
                       horizontal-alignment: right;
                       min-width: 100px;
-                      text: "Average Express Fee  :  ";
+                      text: i18n.average_express_fee+": ";
                       font-size: 16px;
                       font-weight: 600;
                       color: enable-fee? Colors.whitesmoke:ROOT_GLOBAL.blockColor;
@@ -319,7 +319,7 @@ export component SendWin inherits Rectangle {
                     padding: 8px;
                     SText {
                         min-width: 100px;
-                        text: "Express Fee";
+                        text: i18n.express_fee;
                         font-size: 16px;
                     }
 
