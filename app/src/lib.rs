@@ -58,7 +58,7 @@ pub async fn main() -> Result<()> {
     center_window(ui.window());
 
     ui.global::<Language>()
-        .set_name(conf.language.clone().into());
+        .set_name(conf.language.as_str().into());
     ui.global::<WalletAccounts>().set_is_test(conf.istest);
     ui.global::<WalletAccounts>()
         .set_average_express_fee("0.00".into());
@@ -803,7 +803,7 @@ fn block2tranx(block: WalletBlock) -> Vec<TranxDay> {
     let mut order: Vec<String> = Vec::new(); // keep tranx's date in order
     let mut map: HashMap<String, Vec<TranxItem>> = HashMap::new();
     for tx in block.block_as_address.into_iter() {
-        let time = tx.time.clone(); // clone the time to avoid borrowing issues
+        let time = tx.time.as_str();
         let mut iter: std::str::SplitAsciiWhitespace<'_> = time.split_ascii_whitespace();
         let key: String = iter.next().unwrap().into();
         let time = iter.next().unwrap();
@@ -818,7 +818,7 @@ fn block2tranx(block: WalletBlock) -> Vec<TranxDay> {
             address: tx.address.into(),
             amount: sign_amount(&truncat_amount(&tx.amount), &tx.direction).into(),
             time: (time + " UTC").into(),
-            day: key.clone().into(),
+            day: key.as_str().into(),
             remark: match tx.remark {
                 Some(ref r) => r.into(),
                 None => SharedString::new(),
@@ -836,7 +836,7 @@ fn block2tranx(block: WalletBlock) -> Vec<TranxDay> {
     order
         .into_iter()
         .map(|day| TranxDay {
-            day: day.clone().into(),
+            day: day.as_str().into(),
             item: Rc::new(VecModel::from(map.remove(&day).unwrap())).into(),
         })
         .collect()

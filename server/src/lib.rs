@@ -300,7 +300,7 @@ pub async fn main() -> anyhow::Result<()> {
                     let hash = res.unwrap();
                     Ok(SendResult {
                         status: "success".to_string(),
-                        tx_hash: hash.clone(),
+                        tx_hash: hash,
                     })
                 }
                 Err(e) => Err(e),
