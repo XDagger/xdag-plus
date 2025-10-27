@@ -18,14 +18,14 @@ crate-type = ["lib", "cdylib"]
 name = "xdagplus_lib"
 
 [dependencies]
-slint = { version = "1.10.0", features = [
+slint = { version = "1.14", features = [
     "backend-winit",
     "renderer-femtovg",
     "compat-1-2",
 ], default-features = false }
 rayon = "1.10.0"
-i-slint-backend-winit = { version = "1.10.0", features = ["renderer-femtovg"] }
-winit = "0.30.9"
+i-slint-backend-winit = { version = "1.14", features = ["renderer-femtovg"] }
+winit = "0.30.12"
 
 bip32 = { path = "../bip32" }
 xerror = { path = "../xerror" }
@@ -53,5 +53,5 @@ qrcode = "0.14.1"
 open = "=5.3.2"
 
 [build-dependencies]
-slint-build = "1.10.0"
+slint-build = "1.14"
 winres = "0.1.12"

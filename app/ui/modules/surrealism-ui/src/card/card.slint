@@ -50,10 +50,10 @@ export component Card inherits Rectangle{
   width : UseSurrealismFn.count-width(self.card-width,self.padding-left);
   border-width : self.card-border.border-width;
   border-radius : self.card-border.border-radius;
-  padding-top : self.card-padding.padding-top;
-  padding-bottom : self.card-padding.padding-bottom;
-  padding-left : self.card-padding.padding-left;
-  padding-right : self.card-padding.padding-right;
+  // padding-top : self.card-padding.padding-top;
+  // padding-bottom : self.card-padding.padding-bottom;
+  // padding-left : self.card-padding.padding-left;
+  // padding-right : self.card-padding.padding-right;
   drop-shadow-blur : card-shadow.blur;
   drop-shadow-offset-x : card-shadow.x;
   drop-shadow-offset-y : card-shadow.y;
@@ -95,7 +95,7 @@ export component Card inherits Rectangle{
       root.border-color : ROOT-STYLES.sur-theme-colors.dark.normal;
     }
   ]
-  
+
   // animation
   animate background {
     duration: ROOT-STYLES.sur-an-duration;

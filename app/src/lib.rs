@@ -275,17 +275,9 @@ pub async fn main() -> Result<()> {
                 let ui = ui_handle.upgrade().unwrap();
                 let ui_weak = ui.as_weak();
                 thread::spawn(move || {
+                    let fee = extra_free.parse::<f64>().unwrap_or(0.0);
                     let res = tokio::runtime::Runtime::new().unwrap().block_on(async {
-                        transfer_xdag(
-                            is_test,
-                            &mnemonic,
-                            &from,
-                            &to,
-                            amount,
-                            &remark,
-                            extra_free as f64,
-                        )
-                        .await
+                        transfer_xdag(is_test, &mnemonic, &from, &to, amount, &remark, fee).await
                     });
 
                     // let ui = ui_handle.upgrade().unwrap();

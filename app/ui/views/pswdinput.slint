@@ -1,0 +1,138 @@
+import { HorizontalBox, LineEdit  } from "std-widgets.slint";
+import {I18n, Language} from "../i18n.slint";
+import {ROOT_GLOBAL, WalletAccounts} from "../global.slint";
+import { XButton } from "../modules/surrealism-ui/x_index.slint";
+import { SText } from "../modules/surrealism-ui/index.slint";
+
+export component PasswordInputView inherits Rectangle {
+    in-out property <bool> is-new:true; // input password for new creating wallet
+    private property <bool> show-pswd:false;
+    private property <string> pswd;
+    in-out property <string> win-title <=> title.text;
+    callback check_password(string) -> bool;
+    callback go-back();
+    background: ROOT-GLOBAL.bgColor;
+    i18n := I18n {
+        lang <=> Language.name;
+    }
+
+    init => {
+        p1.focus()
+    }
+    HorizontalBox {
+        y: 0;
+        width: 100%;
+        height: 40px;
+        // alignment: end;
+        if is-new && !WalletAccounts.is-lock:XButton {
+            font-size: 16px;
+            text: "";
+            height: parent.height * 80%;
+            width: parent.height * 80%;
+            icon: @image-url("../assets/arrow_back.svg");
+            show-icon: true;
+            round: true;
+            clicked => {
+                go-back();
+            }
+        }
+        Rectangle { }
+
+        XButton {
+            font-size: 16px;
+            text: "";
+            height: parent.height * 80%;
+            width: parent.height * 80%;
+            icon: @image-url("../assets/backspace.svg");
+            show-icon: true;
+            round: true;
+            clicked => {
+                reinput();
+            }
+        }
+
+    }
+
+    VerticalLayout {
+        height: 20%;
+        width: 40%;
+        HorizontalBox {
+            alignment: start;
+            title := SText {
+                min-width: 300px;
+                horizontal-alignment: left;
+                font-size: 18px;
+                text: i18n.desktop_enter_password;
+            }
+        }
+
+        HorizontalBox {
+            spacing: 20px;
+            alignment: center;
+            p1 := LineEdit {
+                font-size: 16px;
+                width: 90%;
+                height: 43px;
+                input-type: password;
+                placeholder-text: i18n.desktop_enter_password;
+                key-released(event) => {
+                  debug(event.text);
+                  if event.text == Key.Return {
+                    debug("Return key pressed");
+                    complete-timer.running = true;
+                  }
+                  return EventResult.accept;
+                }
+            }
+            XButton {
+                font-size: 18px;
+                text: "";
+                height: 47px;
+                width: 47px;
+                icon: @image-url("../assets/arrow_forward.svg");
+                show-icon: true;
+                round: true;
+                clicked => {
+                    if p1.text != "" {
+                        complete-timer.running = true;
+                    }
+                }
+            }
+
+        }
+
+        HorizontalBox {
+            alignment: center;
+            err := SText {
+                visible: false;
+                min-width: 400px;
+                horizontal-alignment: center;
+                color: Colors.red;
+                font-size: 16px;
+                text: i18n.desktop_password_error;
+            }
+        }
+    }
+
+    complete-timer := Timer {
+        interval: 150ms;
+        running: false;
+        triggered => {
+            self.running = false;
+            pswd = p1.text;
+            err.visible = !check_password(pswd);
+            if err.visible {
+                p1.focus();
+            }
+        }
+    }
+
+
+    public function reinput() {
+        p1.text = "";
+
+        p1.read-only = false;
+        p1.focus();
+        err.visible = false;
+    }
+}

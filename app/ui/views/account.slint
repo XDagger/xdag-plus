@@ -3,9 +3,9 @@ import { XButton } from "../modules/surrealism-ui/x_index.slint";
 import { HorizontalBox, Button,LineEdit, TextEdit,VerticalBox,ScrollView } from "std-widgets.slint";
 import {I18n, Language} from "../i18n.slint";
 import {UiWallets,TranxItem,TranxDay,TranxType,FavoriteAddr,ROOT-GLOBAL, WalletAccounts, ROOT-GLOBAL} from "../global.slint";
-import {CreateWallet,ImportWallet, Contacts,Qrcode,MnemonicWin,Transaction, SecurityWin,About,
+import {CreateWallet,ImportWallet, Contacts,Qrcode,MnemonicWin,Transaction, ModifyPswdWin,About,
     XlineEdit,LanguageWin,NetworkWin,SendWin,DelContact,DelWallet,ErrorWin, RenameWallet} from "../components/index.slint";
-import { PasswordView } from "./password.slint";
+import { PasswordInputView } from "./pswdinput.slint";
 
 
 export component AccountsView inherits Rectangle {
@@ -172,8 +172,8 @@ export component AccountsView inherits Rectangle {
                             if WalletAccounts.fetching == true: Image {
                                 colorize: ROOT_GLOBAL.bgColorMask2;
                                 source: @image-url("../assets/spinner.svg");
-                                rotation-angle: !WalletAccounts.fetching ? 0deg : 240deg * animation-tick() / 1s;
-                                animate rotation-angle {
+                                transform-rotation: !WalletAccounts.fetching ? 0deg : 240deg * animation-tick() / 1s;
+                                animate transform-rotation {
                                     easing: ease-in-out;
                                     iteration-count: -1;
                                 }
@@ -331,8 +331,8 @@ export component AccountsView inherits Rectangle {
                                     colorize: ROOT_GLOBAL.bottomNavColor;
                                     width: 80px;
                                     source: @image-url("../assets/spinner.svg");
-                                    rotation-angle: !WalletAccounts.fetching ? 0deg : 240deg * animation-tick() / 1s;
-                                    animate rotation-angle {
+                                    transform-rotation: !WalletAccounts.fetching ? 0deg : 240deg * animation-tick() / 1s;
+                                    animate transform-rotation {
                                         easing: ease-in-out;
                                         iteration-count: -1;
                                     }
@@ -1454,7 +1454,7 @@ export component AccountsView inherits Rectangle {
             show-password-check = true;
         }
     }
-    if show-password-check: PasswordView {
+    if show-password-check: PasswordInputView {
         go-back => {
             show-password-check = false;
             show-send-win = false;
@@ -1553,7 +1553,7 @@ export component AccountsView inherits Rectangle {
         }
     }
 
-    security-win := SecurityWin {
+    security-win := ModifyPswdWin {
         visible: false;
         close => {
             self.visible = false;

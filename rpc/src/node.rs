@@ -51,8 +51,10 @@ pub async fn get_average_express_fee(is_test_net: bool) -> Result<String, XwErro
     let client = HttpClientBuilder::default()
         .request_timeout(Duration::from_secs(18))
         .build(uri)?;
-    let res: String = client.request("xdag_getAverageFee", rpc_params![]).await?;
-
+    let mut res: String = client.request("xdag_getAverageFee", rpc_params![]).await?;
+    if res.len() > 7 {
+        res = res[0..7].to_string();
+    }
     Ok(res)
 }
 

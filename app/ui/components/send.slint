@@ -99,8 +99,8 @@ export component SendWin inherits Rectangle {
                     colorize: ROOT_GLOBAL.bottomNavColor;
                     width: 150px;
                     source: @image-url("../assets/spinner.svg");
-                    rotation-angle: !WalletAccounts.sending ? 0deg : 240deg * animation-tick() / 1s;
-                    animate rotation-angle {
+                    transform-rotation: !WalletAccounts.sending ? 0deg : 240deg * animation-tick() / 1s;
+                    animate transform-rotation {
                         easing: ease-in-out;
                         iteration-count: -1;
                     }
@@ -255,10 +255,14 @@ export component SendWin inherits Rectangle {
                       }
                     }
                     Rectangle {
-                      SText {
-                          min-width: 210px;
-                          text: i18n.express_fee+": "+ fee-value + " XDAG";
+                      HorizontalLayout {
+                        alignment: start;
+                        SText {
+                          min-width: 150px;
+                          horizontal-alignment: left;
+                          text: i18n.express_fee+": "+ fee-value.to-fixed(1) + " XDAG";
                           font-size: 16px;
+                        }
                       }
                       TouchArea {
                         clicked => {
@@ -294,12 +298,13 @@ export component SendWin inherits Rectangle {
                       changed(value) => {
                         fee-int = value;
                         fee-value = fee-int ;
-                        fee-value = fee-value/10
+                        fee-value = fee-value/10.0
                       }
                     }
-                    Rectangle {}
+                    HorizontalLayout {
+                    alignment: end;
                     SText {
-                      horizontal-alignment: right;
+                      horizontal-alignment: left;
                       min-width: 100px;
                       text: i18n.average_express_fee+": ";
                       font-size: 16px;
@@ -307,11 +312,12 @@ export component SendWin inherits Rectangle {
                       color: enable-fee? Colors.whitesmoke:ROOT_GLOBAL.blockColor;
                     }
                     SText {
-                      horizontal-alignment: right;
+                      horizontal-alignment: left;
                       text: WalletAccounts.average-express-fee;
                       font-size: 16px;
                       font-weight: 600;
                       color: enable-fee? Colors.whitesmoke:ROOT_GLOBAL.blockColor;
+                    }
                     }
                   }
                   HorizontalLayout {
@@ -328,7 +334,7 @@ export component SendWin inherits Rectangle {
                     SText {
                         horizontal-alignment: right;
                         min-width: 100px;
-                        text: WalletAccounts.express-fee.to-fixed(2)+" XDAG";
+                        text: WalletAccounts.express-fee+"0 XDAG";
                         font-size: 16px;
                         font-weight: 600;
                         color: Colors.whitesmoke;
@@ -349,7 +355,7 @@ export component SendWin inherits Rectangle {
                             WalletAccounts.open-in-browser(WalletAccounts.is-test,WalletAccounts.current-block-info.address);
                         } else {
                             if remark.character-count <= 32 && receiver != sender && !receiver.is-empty {
-                                WalletAccounts.express-fee = fee-value;
+                                WalletAccounts.express-fee = fee-value.to-fixed(1);
                                 send-action();
                             }
                         }
