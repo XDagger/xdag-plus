@@ -17,16 +17,25 @@ path = "./src/lib.rs"
 crate-type = ["lib", "cdylib"]
 name = "xdagplus_lib"
 
-[dependencies]
+[target.'cfg(target_family = "windows")'.dependencies]
+slint = { version = "1.14.1", features = [
+    "backend-winit",
+    "renderer-femtovg",
+    "compat-1-2",
+], default-features = false }
+i-slint-backend-winit = { version = "1.14.1", features = ["renderer-femtovg"] }
+
+[target.'cfg(target_family = "unix")'.dependencies]
 slint = { version = "1.14.1", features = [
     "backend-winit",
     "renderer-skia",
     "compat-1-2",
 ], default-features = false }
-rayon = "1.10.0"
 i-slint-backend-winit = { version = "1.14.1", features = ["renderer-skia"] }
-winit = "0.30.12"
 
+[dependencies]
+winit = "0.30.12"
+rayon = "1.10.0"
 bip32 = { path = "../bip32" }
 xerror = { path = "../xerror" }
 rpc = { path = "../rpc" }
