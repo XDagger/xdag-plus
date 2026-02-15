@@ -18,20 +18,20 @@ crate-type = ["lib", "cdylib"]
 name = "xdagplus_lib"
 
 [target.'cfg(target_family = "windows")'.dependencies]
-slint = { version = "1.14.1", features = [
+slint = { version = "1.15", features = [
     "backend-winit",
     "renderer-femtovg",
     "compat-1-2",
 ], default-features = false }
-i-slint-backend-winit = { version = "1.14.1", features = ["renderer-femtovg"] }
+i-slint-backend-winit = { version = "1.15", features = ["renderer-femtovg"] }
 
 [target.'cfg(target_family = "unix")'.dependencies]
-slint = { version = "1.14.1", features = [
+slint = { version = "1.15", features = [
     "backend-winit",
     "renderer-skia",
     "compat-1-2",
 ], default-features = false }
-i-slint-backend-winit = { version = "1.14.1", features = ["renderer-skia"] }
+i-slint-backend-winit = { version = "1.15", features = ["renderer-skia"] }
 
 [dependencies]
 winit = "0.30.12"
@@ -62,5 +62,5 @@ qrcode = "0.14.1"
 open = "=5.3.2"
 
 [build-dependencies]
-slint-build = "1.14.1"
+slint-build = "1.15"
 winres = "0.1.12"

@@ -1,0 +1,183 @@
+name: Build macOS Release (Slint)
+
+on:
+  push:
+    tags:
+      - "v*"  # 当你推送 v1.0.0 这样的标签时触发
+  workflow_dispatch:  # 允许手动触发
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: full
+
+jobs:
+  build-macos:
+    runs-on: macos-latest  # 真实macOS环境
+
+    # 为Intel和Apple Silicon分别编译
+    strategy:
+      matrix:
+        target:
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 安装Rust工具链
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      # 安装Slint需要的系统依赖
+      - name: Install macOS dependencies
+        run: |
+          # Slint 在macOS上需要的一些基础库
+          # 这些通常已经预装，这里作为确保
+          brew install pkg-config
+          # 如果你需要额外字体或图像处理
+          brew install fontconfig freetype
+
+      # 缓存Cargo依赖（加速构建）
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      # 构建Release版本
+      - name: Build release binary
+        run: |
+          cargo build --release --target ${{ matrix.target }} --package app
+
+          # 重命名二进制文件，加上平台标识
+          BINARY_NAME="XDAG_Plus"  # ⚠️ 改成你的实际应用名称
+          if [ "${{ matrix.target }}" = "x86_64-apple-darwin" ]; then
+            SUFFIX="intel"
+          else
+            SUFFIX="silicon"
+          fi
+
+          # 复制并重命名
+          cp target/${{ matrix.target }}/release/$BINARY_NAME \
+            ./${BINARY_NAME}-macos-${SUFFIX}
+
+      # 创建.app捆绑包（给macOS用户熟悉的安装体验）
+      - name: Create macOS .app bundle
+        run: |
+          BINARY_NAME="XDAG_Plus"  # ⚠️ 改成你的实际应用名称
+
+          if [ "${{ matrix.target }}" = "x86_64-apple-darwin" ]; then
+            SUFFIX="intel"
+          else
+            SUFFIX="silicon"
+          fi
+
+          # 创建.app目录结构
+          mkdir -p "${BINARY_NAME}.app/Contents/MacOS"
+          mkdir -p "${BINARY_NAME}.app/Contents/Resources"
+
+          # 复制二进制文件
+          cp "./${BINARY_NAME}-macos-${SUFFIX}" \
+            "${BINARY_NAME}.app/Contents/MacOS/${BINARY_NAME}"
+
+          # 创建基本的Info.plist（必须）
+          cat > "${BINARY_NAME}.app/Contents/Info.plist" << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleExecutable</key>
+              <string>${BINARY_NAME}</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.xdag.${BINARY_NAME}</string>
+              <key>CFBundleName</key>
+              <string>${BINARY_NAME}</string>
+              <key>CFBundleVersion</key>
+              <string>${{ github.ref_name }}</string>
+              <key>CFBundleShortVersionString</key>
+              <string>${{ github.ref_name }}</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>NSHighResolutionCapable</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
+
+          # 如果有图标（可选）
+          if [ -f "app/ui/assets/icon.icns" ]; then
+            cp app/ui/assets/icon.icns "${BINARY_NAME}.app/Contents/Resources/"
+          fi
+
+          # 打包成.dmg或.zip
+          zip -r "${BINARY_NAME}-macos-${SUFFIX}.zip" "${BINARY_NAME}.app"
+
+      # 上传构建产物（可下载）
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: slint-app-${{ matrix.target }}
+          path: |
+            *.zip
+            *-macos-*
+
+      # 创建GitHub Release并上传文件
+      - name: Upload to Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            *.zip
+            *-macos-*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 可选：创建Universal二进制（同时支持Intel和Apple Silicon）
+  create-universal-binary:
+    needs: build-macos
+    runs-on: macos-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download both architectures
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create universal binary
+        run: |
+          BINARY_NAME="XDAG_Plus"
+
+          # 解压并提取二进制
+          unzip -j "artifacts/slint-app-x86_64-apple-darwin/*-intel.zip" \
+            "*.app/Contents/MacOS/*" -d ./intel/
+          unzip -j "artifacts/slint-app-aarch64-apple-darwin/*-silicon.zip" \
+            "*.app/Contents/MacOS/*" -d ./silicon/
+
+          # 使用lipo合并成通用二进制
+          mkdir -p "${BINARY_NAME}.app/Contents/MacOS"
+          lipo -create \
+            ./intel/${BINARY_NAME} \
+            ./silicon/${BINARY_NAME} \
+            -output "${BINARY_NAME}.app/Contents/MacOS/${BINARY_NAME}"
+
+          # 复制Info.plist（随便用一个架构的）
+          unzip -j "artifacts/slint-app-x86_64-apple-darwin/*-intel.zip" \
+            "*.app/Contents/Info.plist" -d "${BINARY_NAME}.app/Contents/"
+
+          # 打包成通用版
+          zip -r "${BINARY_NAME}-macos-universal.zip" "${BINARY_NAME}.app"
+
+      - name: Upload universal binary to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*-macos-universal.zip"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
