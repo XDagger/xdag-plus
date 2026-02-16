@@ -2,7 +2,7 @@ import {ROOT_GLOBAL, WalletAccounts, UiWallets, TranxItem,TranxType} from "../gl
 import { XButton } from "../modules/surrealism-ui/x_index.slint";
 import { SText } from "../modules/surrealism-ui/index.slint";
 import {I18n, Language} from "../i18n.slint";
-import { Button } from "std-widgets.slint";
+import { Button, CheckBox, SpinBox, Slider } from "std-widgets.slint";
 
 
 export component SendWin inherits Rectangle {
@@ -13,19 +13,21 @@ export component SendWin inherits Rectangle {
     in-out property <string> amount-n: "- " + amount-p;
     in-out property <string> remark;
     in-out property <string> lang-name;
+    property <bool> enable-fee: false;
+    property <float> fee-value: 0.0;
+    property <int> fee-int: 0;
     i18n := I18n {
         lang <=> lang-name;
     }
 
     callback close();
     callback send-action();
-    width: 100%;
-    height: 100%;
+
     background: ROOT-GLOBAL.bgColorMask-transparent;
     Rectangle {
         z: 111;
         width: root.width * 75%;
-        height: root.height * 70%;
+        height: root.height * 75%;
         background: ROOT-GLOBAL.bgColor;
         border-color: ROOT-GLOBAL.borderColor;
         border-width: 1px;
@@ -97,8 +99,8 @@ export component SendWin inherits Rectangle {
                     colorize: ROOT_GLOBAL.bottomNavColor;
                     width: 150px;
                     source: @image-url("../assets/spinner.svg");
-                    rotation-angle: !WalletAccounts.sending ? 0deg : 240deg * animation-tick() / 1s;
-                    animate rotation-angle {
+                    transform-rotation: !WalletAccounts.sending ? 0deg : 240deg * animation-tick() / 1s;
+                    animate transform-rotation {
                         easing: ease-in-out;
                         iteration-count: -1;
                     }
@@ -199,7 +201,7 @@ export component SendWin inherits Rectangle {
                         SText {
                             horizontal-alignment: right;
                             min-width: 100px;
-                            text: "0.00 XDAG";
+                            text: "0.10 XDAG";
                             font-size: 16px;
                             font-weight: 600;
                             color: Colors.whitesmoke;
@@ -231,6 +233,114 @@ export component SendWin inherits Rectangle {
                         }
                     }
                 }
+                Rectangle {
+                  border-width: 1px;
+                  background: ROOT_GLOBAL.blockColor;
+                  border-radius: 8px;
+                  HorizontalLayout {
+                    visible: !WalletAccounts.sent;
+                    padding: 4px;
+                    check:= CheckBox {
+
+                      min-width: 24px;
+                      text: "";
+                      checked: enable-fee;
+                      changed checked => {
+                        enable-fee = check.checked;
+                        if !check.checked {
+                          fee.value = 0;
+                          fee-value = 0;
+                          fee-int = 0;
+                        }
+                      }
+                    }
+                    Rectangle {
+                      HorizontalLayout {
+                        alignment: start;
+                        SText {
+                          min-width: 150px;
+                          horizontal-alignment: left;
+                          text: i18n.express_fee+": "+ fee-value.to-fixed(1) + " XDAG";
+                          font-size: 16px;
+                        }
+                      }
+                      TouchArea {
+                        clicked => {
+                          if check.checked {
+                            check.checked = false;
+                          }else{
+                            check.checked = true;
+                          }
+                          enable-fee = check.checked;
+                        }
+                      }
+                    }
+
+                    // fee := SpinBox {
+                    //   max-width: 160px;
+                    //   minimum: 0;
+                    //   maximum: 1000;
+                    //   value: 0;
+                    //   step-size: 1;
+                    //   enabled: enable-fee;
+                    //   edited(value) => {
+                    //     fee-value = value;
+                    //   }
+                    // }
+                    fee := Slider {
+                      min-width: 250px;
+                      max-width: 250px;
+                      minimum: 0;
+                      maximum: 1000;
+                      value: 0;
+                      step: 1;
+                      enabled: enable-fee;
+                      changed(value) => {
+                        fee-int = value;
+                        fee-value = fee-int ;
+                        fee-value = fee-value/10.0
+                      }
+                    }
+                    HorizontalLayout {
+                    alignment: end;
+                    SText {
+                      horizontal-alignment: left;
+                      min-width: 100px;
+                      text: i18n.average_express_fee+": ";
+                      font-size: 16px;
+                      font-weight: 600;
+                      color: enable-fee? Colors.whitesmoke:ROOT_GLOBAL.blockColor;
+                    }
+                    SText {
+                      horizontal-alignment: left;
+                      text: WalletAccounts.average-express-fee;
+                      font-size: 16px;
+                      font-weight: 600;
+                      color: enable-fee? Colors.whitesmoke:ROOT_GLOBAL.blockColor;
+                    }
+                    }
+                  }
+                  HorizontalLayout {
+                    visible: WalletAccounts.sent;
+                    padding: 8px;
+                    SText {
+                        min-width: 100px;
+                        text: i18n.express_fee;
+                        font-size: 16px;
+                    }
+
+                    Rectangle { }
+
+                    SText {
+                        horizontal-alignment: right;
+                        min-width: 100px;
+                        text: WalletAccounts.express-fee+"0 XDAG";
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: Colors.whitesmoke;
+                    }
+                  }
+                }
             }
             if !WalletAccounts.sending:HorizontalLayout {
                 padding-top: 15px;
@@ -245,6 +355,7 @@ export component SendWin inherits Rectangle {
                             WalletAccounts.open-in-browser(WalletAccounts.is-test,WalletAccounts.current-block-info.address);
                         } else {
                             if remark.character-count <= 32 && receiver != sender && !receiver.is-empty {
+                                WalletAccounts.express-fee = fee-value.to-fixed(1);
                                 send-action();
                             }
                         }

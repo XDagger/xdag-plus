@@ -46,6 +46,18 @@ pub async fn get_balance(is_test_net: bool, address: &str) -> Result<String, XwE
     Ok(res)
 }
 
+pub async fn get_average_express_fee(is_test_net: bool) -> Result<String, XwError> {
+    let uri = if is_test_net { TEST_NODE } else { NODE_RPC };
+    let client = HttpClientBuilder::default()
+        .request_timeout(Duration::from_secs(18))
+        .build(uri)?;
+    let mut res: String = client.request("xdag_getAverageFee", rpc_params![]).await?;
+    if res.len() > 7 {
+        res = res[0..7].to_string();
+    }
+    Ok(res)
+}
+
 pub async fn send_transaction(uri: &str, block: &str) -> Result<String, XwError> {
     let client = HttpClientBuilder::default()
         .request_timeout(Duration::from_secs(18))
@@ -65,6 +77,7 @@ fn transaction_block(
     remark: &str,
     key: &bip32::XPrv,
     nonce: u64,
+    express_fee: f64,
 ) -> Result<String, XwError> {
     if amount < FEE {
         return Err(XwError::LessThanFeeError);
@@ -87,14 +100,14 @@ fn transaction_block(
     // header: timestamp
     let t = get_timestamp();
     writer.write_u64::<LittleEndian>(t)?;
-
-    // if is_test_net {
-    // header: fee, nonce
-    writer.seek(SeekFrom::Current(32)).unwrap();
+    if express_fee > 0.0_f64 {
+        let fee = (express_fee * 1000000000.0_f64) as u64;
+        writer.write_u64::<LittleEndian>(fee)?;
+        writer.seek(SeekFrom::Current(24)).unwrap();
+    } else {
+        writer.seek(SeekFrom::Current(32)).unwrap();
+    }
     writer.write_u64::<LittleEndian>(nonce)?;
-    // } else {
-    //     writer.seek(SeekFrom::Current(8)).unwrap();
-    // }
 
     // input field: input address
     writer.write_u32::<LittleEndian>(0)?;
@@ -124,7 +137,7 @@ fn transaction_block(
     writer.write_all(&key.public_key().to_bytes()[1..33])?;
 
     // sign field: sign_r
-    let signature = sign_transaction(writer.clone().into_inner().as_slice(), key);
+    let signature = sign_transaction(writer.get_ref().as_slice(), key);
     let r = signature.r();
     writer.write_all(&r.to_bytes())?;
 
@@ -208,11 +221,21 @@ pub async fn send_xdag(
     to: &str,
     amount: f64,
     remark: &str,
+    express_fee: f64,
 ) -> Result<String, XwError> {
     let url = if is_test_net { TEST_NODE } else { NODE_RPC };
     let nonce = get_tranx_nonce(url, from).await?;
     let key = bip44::key_from_mnemonic(mnemonic)?;
-    let block = transaction_block(is_test_net, amount, from, to, remark, &key, nonce)?;
+    let block = transaction_block(
+        is_test_net,
+        amount,
+        from,
+        to,
+        remark,
+        &key,
+        nonce,
+        express_fee,
+    )?;
     let res = send_transaction(url, &block).await?;
     if address_to_hash(&res).is_err() {
         return Err(XwError::RpcError(res));
@@ -379,7 +402,7 @@ mod test {
         if let Ok(key) = wallet::bip44::key_from_mnemonic(mnemonic) {
             let from = "Fii9BuhR1KogfNzWbtSH1YJgQQDwFMomK";
             let to = "Fve2AF8NrEPjNcAj5BABTBeqn7LW7WfeT";
-            let block = transaction_block(true, 1.5, from, to, "hello", &key, 111);
+            let block = transaction_block(true, 1.5, from, to, "hello", &key, 111, 0.0_f64);
             match block {
                 Ok(s) => println!("{}", s),
                 Err(e) => println!("{}", e),
@@ -397,13 +420,19 @@ mod test {
         let from = "Fii9BuhR1KogfNzWbtSH1YJgQQDwFMomK";
         let nonce = get_tranx_nonce(url, from).await.unwrap();
         let to = "Fve2AF8NrEPjNcAj5BABTBeqn7LW7WfeT";
-        let block = transaction_block(true, 1.0, from, to, "hello", &key, nonce).unwrap();
+        let block = transaction_block(true, 1.0, from, to, "hello", &key, nonce, 0.0_f64).unwrap();
         println!("{}", block);
         let res = send_transaction(url, &block).await;
         match res {
             Ok(s) => println!("{}", s),
             Err(e) => println!("{}", e),
         }
+    }
+
+    #[tokio::test]
+    async fn test_get_average_fee() {
+        let res = get_average_express_fee(true).await;
+        println!("{:?}", res);
     }
 
     #[test]
@@ -435,5 +464,12 @@ mod test {
         let hash = address_to_hash(addr).unwrap();
         assert_eq!(hash[..24], [0u8; 24]);
         assert_eq!(hash[24..], [0u8; 8]);
+    }
+
+    #[test]
+    fn test_fee_2_bytes() {
+        let fee: f64 = 0.2;
+        let int_fee = (fee * 1000000000.0_f64) as u64;
+        println!("{int_fee:016x}"); // 000000000bebc200
     }
 }

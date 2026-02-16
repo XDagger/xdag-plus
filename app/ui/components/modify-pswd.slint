@@ -1,0 +1,204 @@
+import { HorizontalBox, LineEdit, Button  } from "std-widgets.slint";
+import {I18n, Language} from "../i18n.slint";
+import {ROOT_GLOBAL, WalletAccounts} from "../global.slint";
+import { XButton } from "../modules/surrealism-ui/x_index.slint";
+import { SText } from "../modules/surrealism-ui/index.slint";
+
+export component ModifyPswdWin inherits Rectangle {
+    in-out property <bool> is-new:true; // input password for new creating wallet
+    private property <bool> show-pswd:false;
+    private property <string> pswd;
+    in-out property <string> win-title <=> title.text;
+    callback check_password(string);
+    callback close();
+    i18n := I18n {
+        lang <=> Language.name;
+    }
+
+    init => {
+        p1.focus()
+    }
+    // width: parent.width * 100%;
+    // height: parent.height * 100%;
+    background: ROOT-GLOBAL.bgColorMask-transparent;
+    Rectangle {
+        z: 222;
+        width: root.width * 50%;
+        height: root.height * 50%;
+        border-color: ROOT-GLOBAL.borderColor;
+        border-width: 1px;
+        background: ROOT-GLOBAL.bgColor;
+        border-radius: 10px;
+        HorizontalLayout {
+            y: 0;
+            width: 100%;
+            height: 40px;
+            padding-left: 20px;
+            padding-right: 10px;
+            padding-top: 8px;
+            spacing: 8px;
+            SText {
+                horizontal-alignment: left;
+                font-size: 20px;
+                font-weight: 900;
+                min-width: 200px;
+                text: i18n.security;
+            }
+
+            Rectangle { }
+
+            XButton {
+                font-size: 16px;
+                text: "";
+                height: parent.height * 80%;
+                width: parent.height * 80%;
+                icon: @image-url("../assets/backspace.svg");
+                show-icon: true;
+                round: true;
+                clicked => {
+                    reinput();
+                }
+            }
+
+            XButton {
+                font-size: 16px;
+                text: "";
+                height: parent.height * 80%;
+                width: parent.height * 80%;
+                icon: @image-url("../assets/close.svg");
+                show-icon: true;
+                round: true;
+                clicked => {
+                    close();
+                }
+            }
+        }
+
+        VerticalLayout {
+            height: 30%;
+            HorizontalBox {
+                alignment: center;
+                title := SText {
+                    min-width: 300px;
+                    horizontal-alignment: center;
+                    font-size: 18px;
+                    text: i18n.desktop_change_password;
+                }
+            }
+
+            HorizontalBox {
+                // spacing: 30px;
+                alignment: center;
+                p1 := LineEdit {
+                    font-size: 16px;
+                    width: 50%;
+                    height: 43px;
+                    input-type: password;
+                    horizontal-alignment: left;
+                    placeholder-text: "";
+                    edited => {
+                        if self.text == "" {
+                          err.visible = false;
+                        }
+                    }
+                    key-released(event) => {
+                      if event.text == Key.Return {
+                          if win-title == i18n.desktop_change_password && self.text != "" {
+                              pswd = p1.text;
+                              win-title = i18n.desktop_repeat_password;
+                              reinput();
+                              back.visible = true;
+                              continue.text = i18n.desktop_change_password;
+                          }
+                          if win-title == i18n.desktop_repeat_password && self.text != "" {
+                              complete-timer.running = true;
+                          }
+                        }
+                        return EventResult.accept;
+                    }
+                }
+            }
+
+            HorizontalBox {
+                alignment: center;
+                err := SText {
+                    visible: false;
+                    min-width: 400px;
+                    horizontal-alignment: center;
+                    color: Colors.red;
+                    font-size: 16px;
+                    text: i18n.desktop_repeat_password_error;
+                }
+            }
+
+            HorizontalBox {
+                padding-left: 20px;
+                padding-right: 20px;
+                back := Button {
+                    min-width: 100px;
+                    visible: false;
+                    text: i18n.back;
+                    clicked => {
+                        self.visible = false;
+                        win-title = i18n.desktop_change_password;
+                        continue.text = i18n.continueText;
+                        reinput();
+                        continue.visible = true;
+                    }
+                }
+
+                Rectangle { }
+
+                continue := Button {
+                    min-width: 100px;
+                    primary: true;
+                    text: i18n.continueText;
+                    enabled: !p1.text.is-empty;
+                    clicked => {
+                      if self.text == i18n.continueText {
+                        pswd = p1.text;
+                        win-title = i18n.desktop_repeat_password;
+                        reinput();
+                        back.visible = true;
+                        continue.text = i18n.desktop_change_password;
+                      }
+                      else {
+                          complete-timer.running = true;
+                      }
+                    }
+                }
+            }
+        }
+
+        complete-timer := Timer {
+            interval: 150ms;
+            running: false;
+            triggered => {
+                self.running = false;
+                err.visible = pswd != p1.text;
+                if err.visible {
+                    p1.focus();
+                } else {
+                    check_password(pswd);
+                }
+            }
+        }
+    }
+
+
+    public function reinput() {
+        p1.text = "";
+        p1.read-only = false;
+        p1.focus();
+        err.visible = false;
+    }
+    public function show-btn() {
+        continue.visible = true;
+        continue.text = i18n.continueText;
+        back.visible = false;
+    }
+    TouchArea {
+        clicked => {
+        }
+    }
+}

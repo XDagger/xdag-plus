@@ -4,7 +4,7 @@ import { SText } from "../modules/surrealism-ui/index.slint";
 import {I18n, Language} from "../i18n.slint";
 import {ROOT_GLOBAL, UiWallets,WalletAccounts} from "../global.slint";
 import { CreateWallet,ImportWallet,ErrorWin } from "../components/index.slint";
-import { PasswordView } from "password.slint";
+import { PasswordInputView } from "pswdinput.slint";
 
 export component EntryView inherits Rectangle {
     background: ROOT-GLOBAL.bgColor;
@@ -223,7 +223,7 @@ export component EntryView inherits Rectangle {
 
         TouchArea { }
     }
-    if show-password-win:PasswordView {
+    if show-password-win:PasswordInputView {
         win-title: i18n.desktop_create_password; // Initial title
         go-back() => {
             if wallet-password != "" {

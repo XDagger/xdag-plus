@@ -42,6 +42,12 @@ struct SendRequest {
     address: String,
     #[serde(default)]
     remark: String,
+    #[serde(default = "default_fee")]
+    express_fee: String,
+}
+
+fn default_fee() -> String {
+    "0.0".to_string()
 }
 
 #[derive(Serialize, Clone)]
@@ -198,22 +204,18 @@ pub async fn main() -> anyhow::Result<()> {
                 return Err(ErrorObject::owned(-32003, "wallet locked", Some("")));
             }
             let address = match params.one::<String>() {
-                Ok(addr) => {
-                    if !addr.is_empty() {
-                        let res = bs58::decode(&addr).with_check(None).into_vec();
-                        if res.is_err() {
-                            return Err(ErrorObject::owned(
-                                -32004,
-                                "invalide address characters",
-                                Some(""),
-                            ));
-                        }
-                        addr.clone()
-                    } else {
-                        wallet.address.clone()
+                Ok(addr) if !addr.is_empty() => {
+                    let res = bs58::decode(&addr).with_check(None).into_vec();
+                    if res.is_err() {
+                        return Err(ErrorObject::owned(
+                            -32004,
+                            "invalide address characters",
+                            Some(""),
+                        ));
                     }
+                    addr
                 }
-                Err(_) => wallet.address.clone(),
+                _ => wallet.address.clone(),
             };
 
             let res = rpc::get_balance(*is_test_net, &address).await;
@@ -244,7 +246,7 @@ pub async fn main() -> anyhow::Result<()> {
                     }
 
                     let amount = request.amount.parse::<f64>().unwrap_or(0.0);
-                    if amount == 0.0 {
+                    if amount <= 0.0 {
                         return Err(ErrorObject::owned(
                             -32005,
                             "invalide transfer amount",
@@ -261,6 +263,22 @@ pub async fn main() -> anyhow::Result<()> {
                             Some(""),
                         ));
                     }
+                    if request.express_fee.parse::<f64>().is_err() {
+                        return Err(ErrorObject::owned(
+                            -32005,
+                            "invalide transfer express fee",
+                            Some(""),
+                        ));
+                    }
+                    let express_fee = request.express_fee.parse::<f64>().unwrap();
+                    if express_fee < 0.0 {
+                        return Err(ErrorObject::owned(
+                            -32005,
+                            "invalide transfer express fee",
+                            Some(""),
+                        ));
+                    }
+
                     let res = rpc::send_xdag(
                         *is_test_net,
                         &wallet.mnemonic,
@@ -268,6 +286,7 @@ pub async fn main() -> anyhow::Result<()> {
                         &request.address,
                         amount,
                         &request.remark,
+                        express_fee,
                     )
                     .await;
 
@@ -281,7 +300,7 @@ pub async fn main() -> anyhow::Result<()> {
                     let hash = res.unwrap();
                     Ok(SendResult {
                         status: "success".to_string(),
-                        tx_hash: hash.clone(),
+                        tx_hash: hash,
                     })
                 }
                 Err(e) => Err(e),

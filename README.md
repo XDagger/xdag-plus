@@ -57,7 +57,7 @@ server --ip <ip address> --port <port number> --test-net
     - params: ["\<wallet address\>"]
     - response: {"id":1,"result": "\<balance of the address\>"}
   - method: Xdag.Transfer
-    - params: [{"amount":"\<amount\>","address":"\<to address\>","remark":"\<remark\>"}]
+    - params: [{"amount":"\<amount\>","address":"\<to address\>","remark":"\<remark\>","express_fee":"\<express fee\>"}]
     - response: {"id":1,"result": {"Status":"success","TxHash":"\<transaction hash\>"}}
 
 

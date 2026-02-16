@@ -2,10 +2,10 @@ import { SText, SDivider } from "../modules/surrealism-ui/index.slint";
 import { XButton } from "../modules/surrealism-ui/x_index.slint";
 import { HorizontalBox, Button,LineEdit, TextEdit,VerticalBox,ScrollView } from "std-widgets.slint";
 import {I18n, Language} from "../i18n.slint";
-import {UiWallets,TranxItem,TranxDay,TranxType,FavoriteAddr,ROOT-GLOBAL, WalletAccounts} from "../global.slint";
-import {CreateWallet,ImportWallet, Contacts,Qrcode,MnemonicWin,Transaction, SecurityWin,About,
+import {UiWallets,TranxItem,TranxDay,TranxType,FavoriteAddr,ROOT-GLOBAL, WalletAccounts, ROOT-GLOBAL} from "../global.slint";
+import {CreateWallet,ImportWallet, Contacts,Qrcode,MnemonicWin,Transaction, ModifyPswdWin,About,
     XlineEdit,LanguageWin,NetworkWin,SendWin,DelContact,DelWallet,ErrorWin, RenameWallet} from "../components/index.slint";
-import { PasswordView } from "./password.slint";
+import { PasswordInputView } from "./pswdinput.slint";
 
 
 export component AccountsView inherits Rectangle {
@@ -40,6 +40,7 @@ export component AccountsView inherits Rectangle {
         WalletAccounts.current-password = UiWallets.ui-wallets[0].password;
         WalletAccounts.current-balance = "0.00";
         WalletAccounts.fetch-history(WalletAccounts.is-test, UiWallets.ui-wallets[0].address);
+        WalletAccounts.fetch_average_express(WalletAccounts.is-test);
     }
     account-view := Rectangle {
         y: header-bar.height;
@@ -171,8 +172,8 @@ export component AccountsView inherits Rectangle {
                             if WalletAccounts.fetching == true: Image {
                                 colorize: ROOT_GLOBAL.bgColorMask2;
                                 source: @image-url("../assets/spinner.svg");
-                                rotation-angle: !WalletAccounts.fetching ? 0deg : 240deg * animation-tick() / 1s;
-                                animate rotation-angle {
+                                transform-rotation: !WalletAccounts.fetching ? 0deg : 240deg * animation-tick() / 1s;
+                                animate transform-rotation {
                                     easing: ease-in-out;
                                     iteration-count: -1;
                                 }
@@ -330,8 +331,8 @@ export component AccountsView inherits Rectangle {
                                     colorize: ROOT_GLOBAL.bottomNavColor;
                                     width: 80px;
                                     source: @image-url("../assets/spinner.svg");
-                                    rotation-angle: !WalletAccounts.fetching ? 0deg : 240deg * animation-tick() / 1s;
-                                    animate rotation-angle {
+                                    transform-rotation: !WalletAccounts.fetching ? 0deg : 240deg * animation-tick() / 1s;
+                                    animate transform-rotation {
                                         easing: ease-in-out;
                                         iteration-count: -1;
                                     }
@@ -1434,6 +1435,8 @@ export component AccountsView inherits Rectangle {
         }
     }
     if show-send-win: SendWin {
+        width: 100%;
+        height: 100%;
         lang-name: Language.name;
         receiver: toAddress.text;
         sender: walletAddress.text;
@@ -1451,7 +1454,7 @@ export component AccountsView inherits Rectangle {
             show-password-check = true;
         }
     }
-    if show-password-check: PasswordView {
+    if show-password-check: PasswordInputView {
         go-back => {
             show-password-check = false;
             show-send-win = false;
@@ -1491,7 +1494,7 @@ export component AccountsView inherits Rectangle {
         running: false;
         triggered => {
             WalletAccounts.send-xdag(WalletAccounts.is-test,UiWallets.ui-wallets[active-index].mnemonic,
-                walletAddress.text,toAddress.text, Amount.text, Remark.text);
+                walletAddress.text,toAddress.text, Amount.text, Remark.text, WalletAccounts.express-fee);
             self.running = false;
         }
     }
@@ -1550,7 +1553,7 @@ export component AccountsView inherits Rectangle {
         }
     }
 
-    security-win := SecurityWin {
+    security-win := ModifyPswdWin {
         visible: false;
         close => {
             self.visible = false;
@@ -1566,6 +1569,14 @@ export component AccountsView inherits Rectangle {
     about-slint := About {
         visible: false;
     }
+
+    fetch-average-timer := Timer {
+            interval: 64s;
+            running: true;
+            triggered() => {
+                WalletAccounts.fetch_average_express(WalletAccounts.is-test);
+            }
+        }
 
     clipboard := LineEdit {
         visible: false;

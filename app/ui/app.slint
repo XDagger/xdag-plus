@@ -1,6 +1,6 @@
 import {ROOT_GLOBAL,UiWallets,WalletAccounts,FavoriteAddr,TransxBlockInfo} from "./global.slint";
 import {Language} from "./i18n.slint";
-import { AccountsView,EntryView,PasswordView } from "./views/index.slint";
+import { AccountsView,EntryView,PasswordInputView } from "./views/index.slint";
 
 // re-export for the native code
 export { UiWallets,WalletAccounts,Language,FavoriteAddr,TransxBlockInfo }
@@ -23,7 +23,7 @@ export component App inherits Window {
             router_index = 2;
         }
     }
-    if router_index == 1:PasswordView {
+    if router_index == 1:PasswordInputView {
         is-new: false;
         check_password(ps) => {
             return WalletAccounts.check_wallet_pswd(ps);

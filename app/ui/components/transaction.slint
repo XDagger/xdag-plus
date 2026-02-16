@@ -24,7 +24,7 @@ export component Transaction inherits Rectangle {
     Rectangle {
         z: 111;
         width: root.width * 75%;
-        height: root.height * 70%;
+        height: root.height * 75%;
         background: ROOT-GLOBAL.bgColor;
         border-color: ROOT-GLOBAL.borderColor;
         border-width: 1px;
@@ -83,8 +83,8 @@ export component Transaction inherits Rectangle {
                 colorize: ROOT_GLOBAL.bottomNavColor;
                 width: 150px;
                 source: @image-url("../assets/spinner.svg");
-                rotation-angle: !WalletAccounts.block-refreshing ? 0deg : 240deg * animation-tick() / 1s;
-                animate rotation-angle {
+                transform-rotation: !WalletAccounts.block-refreshing ? 0deg : 240deg * animation-tick() / 1s;
+                animate transform-rotation {
                     easing: ease-in-out;
                     iteration-count: -1;
                 }
@@ -106,7 +106,14 @@ export component Transaction inherits Rectangle {
                     font-weight: 600;
                     color: item.tranxType == TranxType.input ? ROOT_GLOBAL.greenColor : item.tranxType == TranxType.output ? ROOT_GLOBAL.textColorGray : ROOT_GLOBAL.mainColor54;
                 }
-
+                SText {
+                    horizontal-alignment: center;
+                    min-width: 400px;
+                    text:  WalletAccounts.current-block-info.state;
+                    color: WalletAccounts.current-block-info.state=="Accepted" ? ROOT_GLOBAL.greenColor : ROOT_GLOBAL.bottomNavColor;
+                    font-size: 22px;
+                    font-weight: 600;
+                }
                 SText {
                     horizontal-alignment: center;
                     min-width: 400px;
