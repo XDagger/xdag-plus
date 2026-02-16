@@ -56,7 +56,7 @@ jobs:
           cargo build --release --target ${{ matrix.target }} --package app
 
           # 重命名二进制文件，加上平台标识
-          BINARY_NAME="XDAG_Plus"  # ⚠️ 改成你的实际应用名称
+          BINARY_NAME="xdag-plus"  # ⚠️ 改成你的实际应用名称
           if [ "${{ matrix.target }}" = "x86_64-apple-darwin" ]; then
             SUFFIX="intel"
           else
@@ -70,7 +70,7 @@ jobs:
       # 创建.app捆绑包（给macOS用户熟悉的安装体验）
       - name: Create macOS .app bundle
         run: |
-          BINARY_NAME="XDAG_Plus"  # ⚠️ 改成你的实际应用名称
+          BINARY_NAME="xdag-plus"  # ⚠️ 改成你的实际应用名称
 
           if [ "${{ matrix.target }}" = "x86_64-apple-darwin" ]; then
             SUFFIX="intel"
