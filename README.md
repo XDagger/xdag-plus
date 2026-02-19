@@ -24,7 +24,7 @@ cargo build --release --package app
 ## Build JsonRpc Server
 
 ```bash
-cargo build --release --package sever
+cargo build --release --package server
 ```
 
 ## Server usage
