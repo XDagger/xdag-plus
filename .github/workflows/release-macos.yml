@@ -39,6 +39,8 @@ jobs:
           brew install pkg-config
           # 如果你需要额外字体或图像处理
           brew install fontconfig freetype
+          # 安装 DMG 创建工具
+          brew install create-dmg
 
       # 缓存Cargo依赖（加速构建）
       - name: Cache Cargo dependencies
@@ -115,8 +117,26 @@ jobs:
             cp app/ui/assets/icon.icns "${BINARY_NAME}.app/Contents/Resources/"
           fi
 
-          # 打包成.dmg或.zip
+          # 打包成.dmg和.zip
           zip -r "${BINARY_NAME}-macos-${SUFFIX}.zip" "${BINARY_NAME}.app"
+          
+          # 创建DMG磁盘映像
+          create-dmg \
+            --volname "${BINARY_NAME}" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --app-drop-link 450 185 \
+            --background "${BINARY_NAME}.app/Contents/Resources/background.png" 2>/dev/null || \
+          create-dmg \
+            --volname "${BINARY_NAME}" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --app-drop-link 450 185 \
+            "${BINARY_NAME}-macos-${SUFFIX}.dmg" \
+            "${BINARY_NAME}.app" || \
+          hdiutil create -volname "${BINARY_NAME}" -srcfolder "${BINARY_NAME}.app" -ov -format UDZO "${BINARY_NAME}-macos-${SUFFIX}.dmg"
 
       # 上传构建产物（可下载）
       - name: Upload artifacts
@@ -125,6 +145,7 @@ jobs:
           name: slint-app-${{ matrix.target }}
           path: |
             *.zip
+            *.dmg
             *-macos-*
 
       # 创建GitHub Release并上传文件
@@ -134,6 +155,7 @@ jobs:
         with:
           files: |
             *.zip
+            *.dmg
             *-macos-*
           draft: false
           prerelease: false
@@ -175,9 +197,33 @@ jobs:
           # 打包成通用版
           zip -r "${BINARY_NAME}-macos-universal.zip" "${BINARY_NAME}.app"
 
+      - name: Create universal DMG
+        run: |
+          BINARY_NAME="XDAG_Plus"
+          
+          # 创建DMG磁盘映像
+          create-dmg \
+            --volname "${BINARY_NAME}" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --app-drop-link 450 185 \
+            --background "${BINARY_NAME}.app/Contents/Resources/background.png" 2>/dev/null || \
+          create-dmg \
+            --volname "${BINARY_NAME}" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --app-drop-link 450 185 \
+            "${BINARY_NAME}-macos-universal.dmg" \
+            "${BINARY_NAME}.app" || \
+          hdiutil create -volname "${BINARY_NAME}" -srcfolder "${BINARY_NAME}.app" -ov -format UDZO "${BINARY_NAME}-macos-universal.dmg"
+
       - name: Upload universal binary to Release
         uses: softprops/action-gh-release@v1
         with:
-          files: "*-macos-universal.zip"
+          files: |
+            *-macos-universal.zip
+            *-macos-universal.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
